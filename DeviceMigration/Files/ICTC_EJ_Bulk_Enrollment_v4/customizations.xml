@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WindowsCustomizations>
+  <PackageConfig xmlns="urn:schemas-Microsoft-com:Windows-ICD-Package-Config.v1.0">
+    <ID>{9c8ec164-1b78-4c10-ab4a-e8650db04a30}</ID>
+    <Name>ICTC_EJ_Bulk_Enrollment_v5</Name>
+    <Version>1.1</Version>
+    <OwnerType>ITAdmin</OwnerType>
+    <Rank>0</Rank>
+    <Notes></Notes>
+  </PackageConfig>
+  <Settings xmlns="urn:schemas-microsoft-com:windows-provisioning">
+    <Customizations>
+      <Common>
+        <Accounts>
+          <Azure>
+            <Authority>https://login.microsoftonline.com/common</Authority>
+            <BPRT>0.AS0AZuXatY-t4USZKVZp8duzQ49bDbkDVVNBtUWzHOz67OL3AE8.AgABAwEAAAApTwJmzXqdR4BN2miheQMYAgDs_wUA9P9PLwyXC2PsJmFPUvp2jaUzhyIWqvFqfx_GANUvdgUs2KVseuyb4Y1kU3Zdd-c9k5pRHsofhNHchwEiTKIQTvqf-qDGlvIz4ZJQaO9kHiJ5ATAlBPoo8p1s1lZlyGpjO4VZdjMFF7nX5mlqzGXsLOG63hqbAajh1o9JIcnQRz7wTD7og-xi_afNaVt_EGtj1wOwgUclqDaziWHF4YUxzDySGaM0hWfq_pdahtj4f-8-n2rlQYhXbViKrTpK7tJQzXHj7uB30rE7eLoU62naRL9t7KVXPqkyQZlvP8g5k9q5TLXEzmAD_3GOjLI6UZEDRTRjvIN_6QegUdvqPPEBs4p0Fqfk-MiKqc8HtxcD251lTGRU9n6WXZbxmOzfrV0XoMVNbElTNLsdChgHrGDcptrwOSNgkG4BgQr-EYxeDjevejVi2XI4BVdpVeuOFU5mJ7bsAzsDFAMo5wkTSA6jffUdULNM0MopNwGKM_fx2SbB2yRdQt0KD8YYigii98ifO9qeYS6Bsiurrh3-l7sm43jyCN6CevE6LfT8aOPXUDEkTDtpcesa3oiUUAcLokfnbwmKof58UlwgYHF8CRB2_1iEx9eXMNnyEXWImFmTdQoQUe5-KTZ_Z5eu8cBGOgEEzblXosH6bjCml0puYipi46ZGbYZN_EqFKS9mNZCsvyW6RrLXaEFIGeRx4zIUsxfis870hcVGh7N2rq7NPKldse2zEyMS87rKpDpTMpQPBrug4tbpSl8yBw_qvQ25wQJSvrGz69oey_nDF6hKNuoD1eK3r8rbR75wz7XoMi-YbLZuz9z7LHEkY9yrewGLkGF4eMPuGyKpSqORZ-MoEjq8DVZ2-jfkRnr-</BPRT>
+          </Azure>
+        </Accounts>
+        <OOBE>
+          <Desktop>
+            <HideOobe>True</HideOobe>
+          </Desktop>
+        </OOBE>
+        <Policies>
+          <ApplicationManagement>
+            <AllowAllTrustedApps>Yes</AllowAllTrustedApps>
+          </ApplicationManagement>
+        </Policies>
+      </Common>
+    </Customizations>
+  </Settings>
+</WindowsCustomizations>

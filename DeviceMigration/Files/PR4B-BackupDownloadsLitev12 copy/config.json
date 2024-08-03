@@ -1,0 +1,9 @@
+{
+  "PackageName": "PR4B_BackupDownloadsFolder",
+  "PackageUniqueGUID": "f18f8d73-cf1d-41d9-b8a1-cc6d9e7873ce",
+  "Version": 1,
+  "PackageExecutionContext": "User",
+  "RepetitionInterval": "PT60M",
+  "LoggingDeploymentName": "PR4B_BackupDownloadsFolderCustomlog",
+  "ScriptMode": "Remediation"
+}

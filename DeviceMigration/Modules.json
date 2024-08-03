@@ -1,0 +1,16 @@
+{
+    "requiredModules": [
+        "Microsoft.Graph.Authentication",
+        "Microsoft.Graph.Applications",
+        "Microsoft.Graph.Identity.DirectoryManagement",
+        "Microsoft.Graph.Users"
+    ],
+    "importedModules": [
+        "Microsoft.Graph.Identity.DirectoryManagement",
+        "Microsoft.Graph.Authentication",
+        "Microsoft.Graph.Identity.DirectoryManagement",
+        "Microsoft.Graph.Applications",
+        "Microsoft.Graph.Users"
+    ]
+}
+
