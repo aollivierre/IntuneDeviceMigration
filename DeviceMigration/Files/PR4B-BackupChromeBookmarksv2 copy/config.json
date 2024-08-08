@@ -1,0 +1,9 @@
+{
+  "PackageName": "PR4B_BackupChromeBookMarks",
+  "PackageUniqueGUID": "635442b9-6ae7-4dbc-b5a3-904b7cea3bcc",
+  "Version": 1,
+  "PackageExecutionContext": "User",
+  "RepetitionInterval": "PT60M",
+  "LoggingDeploymentName": "PR4B_BackupChromeBookMarksCustomlog",
+  "ScriptMode": "Remediation"
+}

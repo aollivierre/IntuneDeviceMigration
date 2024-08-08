@@ -5,16 +5,18 @@ function Check-OneDriveSyncStatus {
     )
 
     Begin {
-        Write-Host "Starting Check-OneDriveSyncStatus function"
-        # Log-Params -Params @{ OneDriveLibPath = $OneDriveLibPath }
+        Write-EnhancedLog -Message "Starting Check-OneDriveSyncStatus function" -Level "Notice"
+        Log-Params -Params @{ OneDriveLibPath = $OneDriveLibPath }
 
         # Check if running elevated
-        $isElevated = (New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+        # $isElevated = (New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
-        if ($isElevated) {
-            Write-Host "Session is running elevated. Skipping Check-OneDriveSyncStatus function."
-            return
-        }
+        # if ($isElevated) {
+        #     Write-EnhancedLog -Message "Session is running elevated. Skipping Check-OneDriveSyncStatus function." -Level "INFO"
+        #     return
+        # }
+
+        # CheckAndElevate
 
         # Import OneDriveLib.dll to check current OneDrive Sync Status
         Import-Module $OneDriveLibPath
@@ -29,7 +31,7 @@ function Check-OneDriveSyncStatus {
             $Status = Get-ODStatus
 
             if (-not $Status) {
-                Write-Host "OneDrive is not running or the user is not logged in to OneDrive."
+                Write-EnhancedLog -Message "OneDrive is not running or the user is not logged in to OneDrive." -Level "WARNING"
                 return
             }
 
@@ -45,33 +47,36 @@ function Check-OneDriveSyncStatus {
                 $User = $s.UserName
 
                 if ($s.StatusString -in $Success) {
-                    Write-Host "OneDrive sync status is healthy: Display Name: $DisplayName, User: $User, Status: $StatusString"
+                    Write-EnhancedLog -Message "OneDrive sync status is healthy: Display Name: $DisplayName, User: $User, Status: $StatusString" -Level "INFO"
                 }
                 elseif ($s.StatusString -in $InProgress) {
-                    Write-Host "OneDrive sync status is currently syncing: Display Name: $DisplayName, User: $User, Status: $StatusString"
+                    Write-EnhancedLog -Message "OneDrive sync status is currently syncing: Display Name: $DisplayName, User: $User, Status: $StatusString" -Level "INFO"
                 }
                 elseif ($s.StatusString -in $Failed) {
-                    Write-Host "OneDrive sync status is in a known error state: Display Name: $DisplayName, User: $User, Status: $StatusString"
+                    Write-EnhancedLog -Message "OneDrive sync status is in a known error state: Display Name: $DisplayName, User: $User, Status: $StatusString" -Level "ERROR"
                 }
                 elseif (-not $s.StatusString) {
-                    Write-Host "Unable to get OneDrive Sync Status for Display Name: $DisplayName, User: $User"
+                    Write-EnhancedLog -Message "Unable to get OneDrive Sync Status for Display Name: $DisplayName, User: $User" -Level "WARNING"
                 }
 
                 if (-not $Status.StatusString) {
-                    Write-Host "Unable to get OneDrive Sync Status."
+                    Write-EnhancedLog -Message "Unable to get OneDrive Sync Status." -Level "ERROR"
                 }
             }
         }
         catch {
-            Write-Host "An error occurred while checking OneDrive sync status: $($_.Exception.Message)"
-            # Handle-Error -ErrorRecord $_
+            Write-EnhancedLog -Message "An error occurred while checking OneDrive sync status: $($_.Exception.Message)" -Level "ERROR"
+            Handle-Error -ErrorRecord $_
         }
     }
 
     End {
-        Write-Host "Exiting Check-OneDriveSyncStatus function"
+        Write-EnhancedLog -Message "Exiting Check-OneDriveSyncStatus function" -Level "Notice"
     }
 }
 
 # Example usage
-Check-OneDriveSyncStatus -OneDriveLibPath "C:\ProgramData\AADMigration\Files\OneDriveLib.dll"
+$params = @{
+    OneDriveLibPath = "C:\ProgramData\AADMigration\Files\OneDriveLib.dll"
+}
+Check-OneDriveSyncStatus @params

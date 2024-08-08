@@ -1,0 +1,9 @@
+{
+  "PackageName": "PR4B_BackupOutlookSignature",
+  "PackageUniqueGUID": "59538485-f73b-42b2-975d-3365aa81ec3b",
+  "Version": 1,
+  "PackageExecutionContext": "User",
+  "RepetitionInterval": "PT60M",
+  "LoggingDeploymentName": "PR4B_BackupOutlookSignatureCustomlog",
+  "ScriptMode": "Remediation"
+}

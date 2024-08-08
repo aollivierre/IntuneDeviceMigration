@@ -1,0 +1,9 @@
+{
+  "PackageName": "PR4B_BitLockerRecoveryEscrow",
+  "PackageUniqueGUID": "2d026018-6b41-4013-b784-796f990ef569",
+  "Version": 1,
+  "PackageExecutionContext": "System",
+  "RepetitionInterval": "PT60M",
+  "LoggingDeploymentName": "PR4B_BitLockerRecoveryEscrowCustomlog",
+  "ScriptMode": "Remediation"
+}

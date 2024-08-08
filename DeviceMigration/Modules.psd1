@@ -1,20 +1,19 @@
-{
-    "requiredModules": [
+@{
+    RequiredModules = @(
         "Microsoft.Graph.Authentication",
         "Microsoft.Graph.Applications",
         "Microsoft.Graph.Identity.DirectoryManagement",
         "Microsoft.Graph.Users"
-    ],
-    "importedModules": [
+    )
+    ImportedModules = @(
         "Microsoft.Graph.Identity.DirectoryManagement",
         "Microsoft.Graph.Authentication",
-        "Microsoft.Graph.Identity.DirectoryManagement",
         "Microsoft.Graph.Applications",
         "Microsoft.Graph.Users"
-    ],
-    "myModules": [
+    )
+    MyModules = @(
         "EnhancedAO.Graph.SignInLogs",
-        "EnhancedBoilerPlateAO",
+        # "EnhancedBoilerPlateAO",
         "EnhancedDeviceMigrationAO",
         "EnhancedFileManagerAO",
         "EnhancedGraphAO",
@@ -25,5 +24,5 @@
         "EnhancedSPOAO",
         "EnhancedVPNAO",
         "EnhancedWin32DeployerAO"
-    ]
+    )
 }
