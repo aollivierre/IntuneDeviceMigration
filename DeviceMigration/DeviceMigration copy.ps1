@@ -247,6 +247,22 @@ $ExecuteMigrationTasksParams = @{
 
 
 
+
+# Should we check OneDrive Sync before OR after the prep ? Currently this is being called after the Prep and I wonder if we should call it BEFORE the Prep instead
+# Check-OneDriveSyncStatus -OneDriveLibPath "C:\ProgramData\AADMigration\Files\OneDriveLib.dll"
+
+# Example usage
+# Define parameters using a hashtable
+$taskParams = @{
+    TaskPath = "\AAD Migration"
+    TaskName = "AADM Get OneDrive Sync Status"
+}
+
+# Call the function with splatting
+Trigger-OneDriveSyncStatusTask @taskParams
+
+
+
 # Import migration configuration
 $ConfigFileName = "MigrationConfig.psd1"
 $ConfigBaseDirectory = $PSScriptRoot
@@ -277,8 +293,7 @@ Prepare-AADMigration @PrepareAADMigrationParams
 $DBG
 
 
-# Should we check OneDrive Sync before OR after the prep ? Currently this is being called after the Prep and I wonder if we should call it BEFORE the Prep instead ?
-Check-OneDriveSyncStatus -OneDriveLibPath "C:\ProgramData\AADMigration\Files\OneDriveLib.dll"
+
 
 $DBG
 
