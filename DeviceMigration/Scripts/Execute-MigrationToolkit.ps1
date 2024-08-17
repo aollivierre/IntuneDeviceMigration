@@ -68,7 +68,7 @@
 # Example usage with splatting
 $ToolkitPaths = @{
     ServiceUI = "C:\ProgramData\AADMigration\Files\ServiceUI.exe"
-    ExePath   = "C:\ProgramData\AADMigration\Toolkit\Deploy-Application.exe"
+    ExePath   = "C:\ProgramData\AADMigration\Toolkit\Toolkit\Deploy-Application.exe"
 }
 
 Execute-MigrationToolkit @ToolkitPaths
