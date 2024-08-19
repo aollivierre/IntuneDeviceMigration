@@ -1,4 +1,4 @@
-iex ((irm "https://raw.githubusercontent.com/aollivierre/module-starter/main/Module-Starter.ps1") -replace '\$Mode = "dev"', '$Mode = "dev"')
+# iex ((irm "https://raw.githubusercontent.com/aollivierre/module-starter/main/Module-Starter.ps1") -replace '\$Mode = "dev"', '$Mode = "dev"')
 
 # Example usage for Chrome bookmarks
 $BackupChromeBookmarksToOneDriveParams = @{

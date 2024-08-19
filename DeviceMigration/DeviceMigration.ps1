@@ -65,6 +65,8 @@ function Execute-MigrationTasks {
         [string]$PSAppDeployToolkitURL = "https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/releases/download/v3.8.4/PSAppDeployToolkit_v3.8.4.zip",
         [string]$MDTURL = "https://download.microsoft.com/download/3/3/9/339BE62D-B4B8-4956-B58D-73C4685FC492/MicrosoftDeploymentToolkit_x64.msi",
         # [string]$OneDriveLibURL = "https://github.com/rodneyviana/ODSyncService/raw/main/OneDriveLib.dll",
+        [string]$OneDriveLibURL = "https://api.github.com/repos/rodneyviana/ODSyncService/releases/latest",
+        [string]$ODSyncUtil = "https://api.github.com/repos/rodneyviana/ODSyncUtil/releases/latest",
         [string]$ProvisioningPackageSource = "C:\code\CB\Entra\DeviceMigration\ProvisioningPackage.ppkg"
     )
 
@@ -124,7 +126,28 @@ function Execute-MigrationTasks {
 
             Add-Step "Downloading OneDriveLib.dll" {
                 # Download-OneDriveLib -url $OneDriveLibURL -destination "$FilesFolder\OneDriveLib.dll"
-                Download-OneDriveLib -Destination "$FilesFolder\OneDriveLib.dll"
+                # Download-OneDriveLib -Destination "$FilesFolder\OneDriveLib.dll"
+
+                # Example usage
+                $DownloadOneDriveLibParams = @{
+                    Destination = "$FilesFolder\OneDriveLib.dll"
+                    ApiUrl      = "$OneDriveLibURL"
+                    FileName    = "OneDriveLib.dll"
+                    MaxRetries  = 3
+                }
+                Download-OneDriveLib @DownloadOneDriveLibParams
+
+
+                $DownloadODSyncUtilParams = @{
+                    Destination    = "$FilesFolder\ODSyncUtil.exe"
+                    ApiUrl         = "$ODSyncUtil"
+                    ZipFileName    = "ODSyncUtil-64-bit.zip"
+                    ExecutableName = "ODSyncUtil.exe"
+                    MaxRetries     = 3
+                }
+                Download-ODSyncUtil @DownloadODSyncUtilParams
+
+
             }
 
 
