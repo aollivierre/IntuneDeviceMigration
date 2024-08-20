@@ -48,6 +48,17 @@ function Check-ODSyncUtilStatus {
             throw "This script must be run in a non-administrative user context."
         }
 
+        $DownloadODSyncUtilParams = @{
+            Destination    = (Join-Path -Path $env:USERPROFILE -ChildPath "AADMigration\Files\ODSyncUtil\ODSyncUtil.exe")
+            ApiUrl         = "https://api.github.com/repos/rodneyviana/ODSyncUtil/releases/latest"
+            ZipFileName    = "ODSyncUtil-64-bit.zip"
+            ExecutableName = "ODSyncUtil.exe"
+            MaxRetries     = 3
+        }
+        Download-ODSyncUtil @DownloadODSyncUtilParams
+        
+
+
         # Define the log file path
         # Get the parent of the parent directory of ScriptPath
         $parentOfParentPath = (Get-Item -Path $ScriptPath).Parent.Parent.FullName
@@ -62,16 +73,6 @@ function Check-ODSyncUtilStatus {
             Write-EnhancedLog -Message "Creating log folder at $logFolder" -Level "INFO"
             New-Item -Path $logFolder -ItemType Directory | Out-Null
         }
-
-
-        $DownloadODSyncUtilParams = @{
-            Destination    = "C:\ProgramData\AADMigration\Files\ODSyncUtil\ODSyncUtil.exe"
-            ApiUrl         = "https://api.github.com/repos/rodneyviana/ODSyncUtil/releases/latest"
-            ZipFileName    = "ODSyncUtil-64-bit.zip"
-            ExecutableName = "ODSyncUtil.exe"
-            MaxRetries     = 3
-        }
-        Download-ODSyncUtil @DownloadODSyncUtilParams
     }
 
     

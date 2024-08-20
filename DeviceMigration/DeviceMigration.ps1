@@ -65,26 +65,14 @@ function Execute-MigrationTasks {
         [string]$PSAppDeployToolkitURL = "https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/releases/download/v3.8.4/PSAppDeployToolkit_v3.8.4.zip",
         [string]$MDTURL = "https://download.microsoft.com/download/3/3/9/339BE62D-B4B8-4956-B58D-73C4685FC492/MicrosoftDeploymentToolkit_x64.msi",
         # [string]$OneDriveLibURL = "https://github.com/rodneyviana/ODSyncService/raw/main/OneDriveLib.dll",
-        [string]$OneDriveLibURL = "https://api.github.com/repos/rodneyviana/ODSyncService/releases/latest",
+        # [string]$OneDriveLibURL = "https://api.github.com/repos/rodneyviana/ODSyncService/releases/latest",
         [string]$ODSyncUtil = "https://api.github.com/repos/rodneyviana/ODSyncUtil/releases/latest",
         [string]$ProvisioningPackageSource = "C:\code\CB\Entra\DeviceMigration\ProvisioningPackage.ppkg"
     )
 
     Begin {
         Write-EnhancedLog -Message "Starting Execute-MigrationTasks function" -Level "INFO"
-        Log-Params -Params @{
-            ToolkitFolder             = $ToolkitFolder
-            FilesFolder               = $FilesFolder
-            ScriptsFolder             = $ScriptsFolder
-            BannerImageSource         = $BannerImageSource
-            DeployApplicationSource   = $DeployApplicationSource
-            BannerImageDestination    = $BannerImageDestination
-            MigrationToolURL          = $MigrationToolURL
-            PSAppDeployToolkitURL     = $PSAppDeployToolkitURL
-            MDTURL                    = $MDTURL
-            OneDriveLibURL            = $OneDriveLibURL
-            ProvisioningPackageSource = $ProvisioningPackageSource
-        }
+        Log-Params -Params $PSCmdlet.MyInvocation.BoundParameters
     }
 
     Process {
@@ -129,13 +117,13 @@ function Execute-MigrationTasks {
                 # Download-OneDriveLib -Destination "$FilesFolder\OneDriveLib.dll"
 
                 # Example usage
-                $DownloadOneDriveLibParams = @{
-                    Destination = "$FilesFolder\OneDriveLib.dll"
-                    ApiUrl      = "$OneDriveLibURL"
-                    FileName    = "OneDriveLib.dll"
-                    MaxRetries  = 3
-                }
-                Download-OneDriveLib @DownloadOneDriveLibParams
+                # $DownloadOneDriveLibParams = @{
+                #     Destination = "$FilesFolder\OneDriveLib.dll"
+                #     ApiUrl      = "$OneDriveLibURL"
+                #     FileName    = "OneDriveLib.dll"
+                #     MaxRetries  = 3
+                # }
+                # Download-OneDriveLib @DownloadOneDriveLibParams
 
 
                 $DownloadODSyncUtilParams = @{
@@ -288,6 +276,45 @@ Ensure-RunningAsSystem @ensureRunningAsSystemParams
 # ################################################################################################################################
 
 
+# Example usage of Download-And-Install-ServiceUI function with splatting
+$DownloadAndInstallServiceUIparams = @{
+    TargetFolder           = "$PSScriptRoot"
+    DownloadUrl            = "https://download.microsoft.com/download/3/3/9/339BE62D-B4B8-4956-B58D-73C4685FC492/MicrosoftDeploymentToolkit_x64.msi"
+    MsiFileName            = "MicrosoftDeploymentToolkit_x64.msi"
+    InstalledServiceUIPath = "C:\Program Files\Microsoft Deployment Toolkit\Templates\Distribution\Tools\x64\ServiceUI.exe"
+}
+Download-And-Install-ServiceUI @DownloadAndInstallServiceUIparams
+
+
+# Example usage
+# Example usage
+$DownloadPSAppDeployToolkitParams = @{
+    GithubRepository = 'PSAppDeployToolkit/PSAppDeployToolkit';
+    FilenamePatternMatch = '*.zip';
+    DestinationDirectory = "$PSScriptroot"
+}
+Download-PSAppDeployToolkit @DownloadPSAppDeployToolkitParams
+
+
+
+# we are skipping Download-ODSyncUtil here becuase we are calling withing the scheduled script of Check-ODSyncUtilStatus.ps1 as that will download the file as the user owner not as the SYSTEM owner below as the download logic will remove files and will encounter errors if files are not owned by the user
+# you may call the following during the Execute-MigrationTasks function flow
+
+
+# $DownloadODSyncUtilParams = @{
+#     Destination    = "$PSScriptRoot\Files\ODSyncUtil\ODSyncUtil.exe"
+#     ApiUrl         = "https://api.github.com/repos/rodneyviana/ODSyncUtil/releases/latest"
+#     ZipFileName    = "ODSyncUtil-64-bit.zip"
+#     ExecutableName = "ODSyncUtil.exe"
+#     MaxRetries     = 3
+# }
+# Download-ODSyncUtil @DownloadODSyncUtilParams
+
+
+# ################################################################################################################################
+# ############### END Downloading Service UI and PSADT ###########################################################################
+# ################################################################################################################################
+
 
 # Import migration configuration
 $ConfigFileName = "MigrationConfig.psd1"
@@ -319,10 +346,6 @@ Prepare-AADMigration @PrepareAADMigrationParams
 $DBG
 
 
-
-
-$DBG
-
 # Set up migration task
 
 # $ScriptPath = "C:\ProgramData\AADMigration\Scripts\Execute-MigrationToolkit.ps1"
@@ -343,7 +366,7 @@ $DBG
 # Example usage with splatting
 #Phase 2 Create the Migration task
 
-Unregister-ScheduledTaskWithLogging -TaskName "AADM Launch PSADT for Interactive Migration"
+# Unregister-ScheduledTaskWithLogging -TaskName "AADM Launch PSADT for Interactive Migration"
 
 $DBG
 
@@ -363,47 +386,46 @@ $DBG
 
 
 
-
-
-
 # ################################################################################################################################
 # ############### END CALLING AS SYSTEM to simulate Intune deployment as SYSTEM (Uncomment for debugging) ########################
 # ################################################################################################################################
 
 
-
-# Example usage of Download-And-Install-ServiceUI function with splatting
-$DownloadAndInstallServiceUIparams = @{
-    TargetFolder           = "$PSScriptRoot"
-    DownloadUrl            = "https://download.microsoft.com/download/3/3/9/339BE62D-B4B8-4956-B58D-73C4685FC492/MicrosoftDeploymentToolkit_x64.msi"
-    MsiFileName            = "MicrosoftDeploymentToolkit_x64.msi"
-    InstalledServiceUIPath = "C:\Program Files\Microsoft Deployment Toolkit\Templates\Distribution\Tools\x64\ServiceUI.exe"
-}
-Download-And-Install-ServiceUI @DownloadAndInstallServiceUIparams
-
-
-# Example usage
-$DownloadPSAppDeployToolkitparams = @{
-    GithubRepository     = 'PSAppDeployToolkit/PSAppDeployToolkit'
-    FilenamePatternMatch = '*.zip'
-    ScriptDirectory      = $PSScriptRoot
-}
-Download-PSAppDeployToolkit @DownloadPSAppDeployToolkitparams
-
-
-
-#right before rebooting we will schedule our install script (which is our script2 or our post-reboot script to run automatically at startup under the SYSTEM account)
+#Here we will schedule our Interactive Migration script (which is our script2 or our post-reboot script to run automatically at startup under the SYSTEM account)
 # here I need to pass these in the config file (JSON or PSD1) or here in the splat but I need to have it outside of the function
 
 
-# $schedulerconfigPath = Join-Path -Path $PSScriptRoot -ChildPath "config.psd1"
-$schedulerconfigPath = "C:\code\IntuneDeviceMigration\DeviceMigration\Interactive-Migration-Task-config.psd1"
-$taskParams = @{
-    ConfigPath = $schedulerconfigPath
-    FileName   = "run-ps-hidden.vbs"
-    Scriptroot = $PSScriptRoot
+# # $schedulerconfigPath = Join-Path -Path $PSScriptRoot -ChildPath "config.psd1"
+# $schedulerconfigPath = "C:\code\IntuneDeviceMigration\DeviceMigration\Interactive-Migration-Task-config.psd1"
+# $taskParams = @{
+#     ConfigPath = $schedulerconfigPath
+#     FileName   = "run-ps-hidden.vbs"
+#     Scriptroot = $PSScriptRoot
+# }
+
+# CreateAndRegisterScheduledTask @taskParams
+
+# $DBG
+
+
+
+
+# Example usage with splatting
+$CreateInteractiveMigrationTaskParams = @{
+    TaskPath               = "AAD Migration"
+    TaskName               = "PR4B-AADM Launch PSADT for Interactive Migration"
+    ServiceUIPath          = "C:\ProgramData\AADMigration\ServiceUI.exe"
+    ToolkitExecutablePath  = "C:\ProgramData\AADMigration\PSAppDeployToolkit\Toolkit\Deploy-Application.exe"
+    ProcessName            = "explorer.exe"
+    DeploymentType         = "Install"
+    DeployMode             = "Interactive"
+    TaskTriggerType        = "AtLogOn"
+    TaskRepetitionDuration = "P1D"  # 1 day
+    TaskRepetitionInterval = "PT15M"  # 15 minutes
+    TaskPrincipalUserId    = "NT AUTHORITY\SYSTEM"
+    TaskRunLevel           = "Highest"
+    TaskDescription        = "AADM Launch PSADT for Interactive Migration Version 1.0"
+    Delay                  = "PT2H"  # 2 hours delay before starting
 }
 
-CreateAndRegisterScheduledTask @taskParams
-
-$DBG
+Create-InteractiveMigrationTask @CreateInteractiveMigrationTaskParams

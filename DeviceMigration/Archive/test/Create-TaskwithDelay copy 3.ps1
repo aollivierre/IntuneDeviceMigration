@@ -1,0 +1,1 @@
+$trigger = New-ScheduledTaskTrigger -AtLogOn; $trigger.Delay = 'PT1H'; Register-ScheduledTask -Action (New-ScheduledTaskAction -Execute 'notepad.exe') -Trigger $trigger -TaskName 'TestTaskWithDelay' -Description 'Test task with delay at logon'
