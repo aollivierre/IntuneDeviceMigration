@@ -34,10 +34,10 @@ Ensure-RunningAsSystem @ensureRunningAsSystemParams
 #     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
 # }
 
-# $pwshPath = Get-PowerShellPath
+$pwshPath = Get-PowerShellPath
 
 # Define the path to the PowerShell executable
-$pwshPath = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+# $powerShellPath = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
 
 # Define the path to the deploy-application.ps1 script
 $scriptPath = "$PSScriptRoot\deploy-application.ps1"

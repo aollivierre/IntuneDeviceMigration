@@ -57,7 +57,7 @@ Try {
 	## Set the script execution policy for this process
 	Try { Set-ExecutionPolicy -ExecutionPolicy 'ByPass' -Scope 'Process' -Force -ErrorAction 'Stop' } Catch {}
 
-	# iex ((irm "https://raw.githubusercontent.com/aollivierre/module-starter/main/Module-Starter.ps1") -replace '\$Mode = "dev"', '$Mode = "dev"')
+	iex ((irm "https://raw.githubusercontent.com/aollivierre/module-starter/main/Module-Starter.ps1") -replace '\$Mode = "dev"', '$Mode = "dev"')
 
 	##*===============================================
 	##* VARIABLE DECLARATION
@@ -159,44 +159,103 @@ Try {
 		#Check OneDrive Sync Status prior to prompting user.
 		# Start-Transcript -Path $MigrationPath\Logs\LaunchMigration.txt -Append -Force
 
+
 		
+		function Get-TranscriptFilePath {
+			try {
+				# Log the start of the function
+				Write-Host "Starting Get-TranscriptFilePath..." -ForegroundColor Cyan
 
+				# Check if running as SYSTEM using Test-RunningAsSystem
+				$isSystem = Test-RunningAsSystem
+				Write-Host "Is running as SYSTEM: $isSystem" -ForegroundColor Yellow
 
-		If ($OneDriveKFM) {
+				if ($isSystem) {
+					# If running as SYSTEM, use hostname, job name, and timestamp
+					$jobName = "AAD Migration"  # Replace with your actual job name
+					$hostname = $env:COMPUTERNAME
+					$timestamp = Get-Date -Format "yyyy-MM-dd-HH-mm-ss"
+					$logFilePath = "C:\Logs\$hostname-$jobName-SYSTEM-transcript-$timestamp.log"
+					Write-Host "Generated log file path for SYSTEM: $logFilePath" -ForegroundColor Green
+				}
+				else {
+					# If not running as SYSTEM, use the calling function name
+					$callStack = Get-PSCallStack
+					$callerFunction = if ($callStack.Count -ge 2) { $callStack[1].Command } else { 'UnknownFunction' }
+					$currentDate = Get-Date -Format "yyyy-MM-dd"
+					$logFilePath = "C:\Logs\$callerFunction-transcript-$currentDate.log"
+					Write-Host "Generated log file path for non-SYSTEM: $logFilePath" -ForegroundColor Green
+				}
 
-			Write-Output "OneDriveKFM flag is set to True. Checking Sync Status before continuing."
+				# Ensure the log directory exists
+				if (-not (Test-Path -Path (Split-Path $logFilePath -Parent))) {
+					New-Item -Path (Split-Path $logFilePath -Parent) -ItemType Directory -Force
+					Write-Host "Created directory for log file: $(Split-Path $logFilePath -Parent)" -ForegroundColor Green
+				}
 
-			#Check the most recent OD4B Sync status. Write error to event log if not healthy and exit
-			Try {
-
-				$Events = Get-EventLog -LogName Application -EntryType Information -Source 'AAD_Migration_Script'
-
-				$LastEvent = $Events[0].InstanceId
-				$LastEvent
-
+				return $logFilePath
 			}
-			Catch {
-
-				Write-Output "No OneDrive Sync status found. Exiting migration utility; will retry on next logon."
-				Exit 3
-
+			catch {
+				Write-Host "An error occurred in Get-TranscriptFilePath: $_" -ForegroundColor Red
+				throw $_  # Re-throw the error after logging it
 			}
-
-			If ($LastEvent -eq 1337) {
-
-
-				Write-Output "OneDrive Sync status is considered healthy, continuing."
+		}
 
 
-			}
-			Else {
 
-				Write-Output "OneDrive sync status returned a value of $LastEvent. Migration will not launch at this time."
-				Exit 2
+		# Start the script with error handling
+		try {
+			# Generate the transcript file path
+			$transcriptPath = Get-TranscriptFilePath
 
-			}
+			# Start the transcript
+			Write-Host "Starting transcript at: $transcriptPath" -ForegroundColor Cyan
+			Start-Transcript -Path $transcriptPath
+
+			# Example script logic
+			Write-Host "This is an example action being logged."
 
 		}
+		catch {
+			Write-Host "An error occurred during script execution: $_" -ForegroundColor Red
+		} 
+
+
+		# If ($OneDriveKFM) {
+
+		# 	Write-Output "OneDriveKFM flag is set to True. Checking Sync Status before continuing."
+
+		# 	#Check the most recent OD4B Sync status. Write error to event log if not healthy and exit
+		# 	Try {
+
+		# 		$Events = Get-EventLog -LogName Application -EntryType Information -Source 'AAD_Migration_Script'
+
+		# 		$LastEvent = $Events[0].InstanceId
+		# 		$LastEvent
+
+		# 	}
+		# 	Catch {
+
+		# 		Write-Output "No OneDrive Sync status found. Exiting migration utility; will retry on next logon."
+		# 		Exit 3
+
+		# 	}
+
+		# 	If ($LastEvent -eq 1337) {
+
+
+		# 		Write-Output "OneDrive Sync status is considered healthy, continuing."
+
+
+		# 	}
+		# 	Else {
+
+		# 		Write-Output "OneDrive sync status returned a value of $LastEvent. Migration will not launch at this time."
+		# 		Exit 2
+
+		# 	}
+
+		# }
 
 
 		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
@@ -323,6 +382,7 @@ Try {
 	##*===============================================
 
 	## Call the Exit-Script function to perform final cleanup operations
+	Stop-Transcript
 	Exit-Script -ExitCode $mainExitCode
 }
 Catch {

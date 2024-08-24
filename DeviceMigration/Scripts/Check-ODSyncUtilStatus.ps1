@@ -1,3 +1,30 @@
+
+$jobName = "AAD Migration"
+# Start the script with error handling
+try {
+    # Generate the transcript file path
+    # $transcriptPath = Get-TranscriptFilePath -Jobname $jobName
+
+    $GetTranscriptFilePathParams = @{
+        TranscriptsPath = "C:\Logs\Transcript"
+        JobName         = $jobName
+    }
+    $transcriptPath = Get-TranscriptFilePath @GetTranscriptFilePathParams
+    
+
+    # Start the transcript
+    Write-Host "Starting transcript at: $transcriptPath" -ForegroundColor Cyan
+    Start-Transcript -Path $transcriptPath
+
+    # Example script logic
+    Write-Host "This is an example action being logged."
+
+}
+catch {
+    Write-Host "An error occurred during script execution: $_" -ForegroundColor Red
+} 
+
+
 function Check-ODSyncUtilStatus {
     <#
     .SYNOPSIS
@@ -129,3 +156,5 @@ $CheckODSyncUtilStatusParams = @{
     StatusFileName = "ODSyncUtilStatus.json"
 }
 Check-ODSyncUtilStatus @CheckODSyncUtilStatusParams
+
+Stop-Transcript
