@@ -161,7 +161,7 @@ Try {
 		# Define the base logs path and job name
 		$JobName = "AAD_Migration"
 		$parentScriptName = Get-ParentScriptName
-		Write-Host "Parent Script Name: $parentScriptName"
+		Write-EnhancedLog -Message "Parent Script Name: $parentScriptName"
 
 		# Call the Get-PSFCSVLogFilePath function to generate the dynamic log file path
 		$paramGetPSFCSVLogFilePath = @{
@@ -225,67 +225,43 @@ Try {
 		#endregion HANDLE Transript LOGGING
 
 
-		# If ($OneDriveKFM) {
+		If ($OneDriveKFM) {
 
-		# 	Write-Output "OneDriveKFM flag is set to True. Checking Sync Status before continuing."
+			# 	Write-Output "OneDriveKFM flag is set to True. Checking Sync Status before continuing."
 
-		# 	#Check the most recent OD4B Sync status. Write error to event log if not healthy and exit
-		# 	Try {
+			# 	#Check the most recent OD4B Sync status. Write error to event log if not healthy and exit
+			# 	Try {
 
-		# 		$Events = Get-EventLog -LogName Application -EntryType Information -Source 'AAD_Migration_Script'
+			# 		$Events = Get-EventLog -LogName Application -EntryType Information -Source 'AAD_Migration_Script'
 
-		# 		$LastEvent = $Events[0].InstanceId
-		# 		$LastEvent
+			# 		$LastEvent = $Events[0].InstanceId
+			# 		$LastEvent
 
-		# 	}
-		# 	Catch {
+			# 	}
+			# 	Catch {
 
-		# 		Write-Output "No OneDrive Sync status found. Exiting migration utility; will retry on next logon."
-		# 		Exit 3
+			# 		Write-Output "No OneDrive Sync status found. Exiting migration utility; will retry on next logon."
+			# 		Exit 3
 
-		# 	}
+			# 	}
 
-		# 	If ($LastEvent -eq 1337) {
-
-
-		# 		Write-Output "OneDrive Sync status is considered healthy, continuing."
+			# 	If ($LastEvent -eq 1337) {
 
 
-		# 	}
-		# 	Else {
-
-		# 		Write-Output "OneDrive sync status returned a value of $LastEvent. Migration will not launch at this time."
-		# 		Exit 2
-
-		# 	}
-
-		# }
+			# 		Write-Output "OneDrive Sync status is considered healthy, continuing."
 
 
-		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
-		Show-InstallationWelcome -AllowDefer -DeferDeadline $DeferDeadline -PersistPrompt -ForceCountdown 600
+			# 	}
+			# 	Else {
 
-		## Show Progress Message (with the default message)
-		Show-InstallationProgress
+			# 		Write-Output "OneDrive sync status returned a value of $LastEvent. Migration will not launch at this time."
+			# 		Exit 2
 
-		## <Perform Pre-Installation tasks here>
+			# 	}
 
-
-
-		##*===============================================
-		##* INSTALLATION
-		##*===============================================
-		[string]$installPhase = 'Installation'
-
-		## Handle Zero-Config MSI Installations
-		If ($useDefaultMsi) {
-			[hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Install'; Path = $defaultMsiFile }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
-			Execute-MSI @ExecuteDefaultMSISplat; If ($defaultMspFiles) { $defaultMspFiles | ForEach-Object { Execute-MSI -Action 'Patch' -Path $_ } }
 		}
 
-		## <Perform Installation tasks here>
-
-	
+		
 
 		# $MigrationConfig = Import-LocalizedData -BaseDirectory "C:\ProgramData\AADMigration\scripts\" -FileName "MigrationConfig.psd1"
 		# $MigrationConfig = Import-LocalizedData -BaseDirectory "$PSScriptRoot" -FileName "MigrationConfig.psd1"
@@ -340,6 +316,97 @@ Try {
 		$DomainLeaveUser = $DomainLeaveUser
 		$DomainLeavePassword = $DomainLeavePassword
 		$PPKGName = $ProvisioningPack
+
+
+		If ($UseOneDriveKFM) {
+
+			# 	Write-Output "OneDriveKFM flag is set to True. Checking Sync Status before continuing."
+	
+			# 	#Check the most recent OD4B Sync status. Write error to event log if not healthy and exit
+			$taskParams = @{
+				TaskPath = "\AAD Migration"
+				TaskName = "AADM Get OneDrive Sync Util Status"
+			}
+		
+			# Trigger OneDrive Sync Status Scheduled Task
+			Trigger-ScheduledTask @taskParams
+		
+			# Example usage
+			$params = @{
+				LogFolder      = "C:\ProgramData\AADMigration\logs"
+				StatusFileName = "ODSyncUtilStatus.json"
+			}
+			$result = Analyze-OneDriveSyncUtilStatus @params
+		
+			# Example decision-making based on the result
+			if ($result.Status -eq "Healthy") {
+				Write-EnhancedLog -Message "OneDrive is healthy, no further action required." -Level "INFO"
+			}
+			elseif ($result.Status -eq "InProgress") {
+				Write-EnhancedLog -Message "OneDrive is syncing, please wait..." -Level "WARNING"
+				# Optionally, you might choose to exit here if desired:
+				exit 1
+			}
+			elseif ($result.Status -eq "Failed") {
+				Write-EnhancedLog -Message "OneDrive has encountered an error, please investigate." -Level "ERROR"
+				Write-EnhancedLog -Message "Exiting due to OneDrive failure." -Level "CRITICAL"
+				exit 1
+			}
+			else {
+				Write-EnhancedLog -Message "OneDrive status is unknown, further analysis required." -Level "ERROR"
+				Write-EnhancedLog -Message "Exiting due to unknown OneDrive status." -Level "CRITICAL"
+				exit 1
+			}
+
+		
+		
+			#Todo now we have OneDrive installed and running we need to actually start using our OneDrive for Business location on the local machine to copy user specific files into it as part of our On-prem AD to Entra ID migration prep so we need to copy the following PR4B projects from before
+		
+			# 1- copy Outlook Signatures
+			# 2- copy Downloads folders
+			# any other user specific files
+		
+			# $taskParams = @{
+			# 	TaskPath = "\AAD Migration"
+			# 	TaskName = "User File Backup to OneDrive"
+			# }
+		
+			# # Call the function with splatting
+			# Trigger-ScheduledTask @taskParams
+		
+			# # # Example usage with splatting
+			# $AnalyzeParams = @{
+			# 	LogFolder      = "C:\ProgramData\AADMigration\logs"
+			# 	StatusFileName = "UserFilesBackupStatus.json"
+			# }
+		
+			# Analyze-CopyOperationStatus @AnalyzeParams
+		}
+
+
+		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
+		Show-InstallationWelcome -AllowDefer -DeferDeadline $DeferDeadline -PersistPrompt -ForceCountdown 600
+
+		## Show Progress Message (with the default message)
+		Show-InstallationProgress
+
+		## <Perform Pre-Installation tasks here>
+
+
+
+		##*===============================================
+		##* INSTALLATION
+		##*===============================================
+		[string]$installPhase = 'Installation'
+
+		## Handle Zero-Config MSI Installations
+		If ($useDefaultMsi) {
+			[hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Install'; Path = $defaultMsiFile }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
+			Execute-MSI @ExecuteDefaultMSISplat; If ($defaultMspFiles) { $defaultMspFiles | ForEach-Object { Execute-MSI -Action 'Patch' -Path $_ } }
+		}
+
+		## <Perform Installation tasks here>
+
 
 
 		$MainMigrateParams = @{
@@ -468,12 +535,12 @@ finally {
 	# Ensure that the transcript is stopped even if an error occurs
 	if ($transcriptPath) {
 		Stop-Transcript
-		Write-Host "Transcript stopped." -ForegroundColor Cyan
+		Write-EnhancedLog -Message "Transcript stopped." -Level 'NOTICE'
 		# Stop logging in the finally block
 
 	}
 	else {
-		Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+		Write-EnhancedLog -Message "Transcript was not started due to an earlier error." -Level 'ERROR'
 	}
     
 	# Ensure the log is written before proceeding
