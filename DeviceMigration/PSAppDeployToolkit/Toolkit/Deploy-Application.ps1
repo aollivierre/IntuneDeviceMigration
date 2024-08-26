@@ -57,8 +57,6 @@ Try {
 	## Set the script execution policy for this process
 	Try { Set-ExecutionPolicy -ExecutionPolicy 'ByPass' -Scope 'Process' -Force -ErrorAction 'Stop' } Catch {}
 
-	iex ((irm "https://raw.githubusercontent.com/aollivierre/module-starter/main/Module-Starter.ps1") -replace '\$Mode = "dev"', '$Mode = "dev"')
-
 	##*===============================================
 	##* VARIABLE DECLARATION
 	##*===============================================
@@ -76,44 +74,6 @@ Try {
 	## Variables: Install Titles (Only set here to override defaults set by the toolkit)
 	[string]$installName = 'Azure Active Directory Migration'
 	[string]$installTitle = 'AAD Migration Utility'
-
-	# $MigrationConfig = Import-LocalizedData -BaseDirectory "C:\ProgramData\AADMigration\scripts\" -FileName "MigrationConfig.psd1"
-	# $MigrationConfig = Import-LocalizedData -BaseDirectory "$PSScriptRoot" -FileName "MigrationConfig.psd1"
-
-	# $MigrationConfig = Import-LocalizedData -BaseDirectory (Split-Path -Path $MigrationConfigPath) -FileName (Split-Path -Path $MigrationConfigPath -Leaf)
-	# $MigrationConfig = Import-LocalizedData "C:\code\IntuneDeviceMigration\DeviceMigration\MigrationConfig.psd1"
-
-	# $DBG
-
-
-	# Script variables
-	# $DomainLeaveUser = $MigrationConfig.DomainLeaveUser
-	# $DomainLeavePassword = $MigrationConfig.DomainLeavePass
-	# $TempUser = $MigrationConfig.TempUser
-	# $TempUserPassword = $MigrationConfig.TempPass
-	# $PPKGName = $MigrationConfig.ProvisioningPack
-	# $MigrationPath = $MigrationConfig.MigrationPath
-	# $DeferDeadline = $MigrationConfig.DeferDeadline
-	# $OneDriveKFM = $MigrationConfig.UseOneDriveKFM
-
-
-	# Configuration settings
-	$MigrationPath = "C:\ProgramData\AADMigration"
-	$UseOneDriveKFM = $True
-	$InstallOneDrive = $True
-	$TenantID = "b5dae566-ad8f-44e1-9929-5669f1dbb343" # ICTC Tenant ID
-	$DeferDeadline = "07/12/2024 18:00:00" # July 12, 2024
-	$DeferTimes = ""
-	$TempUser = "MigrationInProgress"
-	$TempPass = "Default1234"
-	$ProvisioningPack = "C:\code\CB\Entra\DeviceMigration\Files\ICTC_EJ_Bulk_Enrollment_v4\ICTC_EJ_Bulk_Enrollment_v5.ppkg"
-
-	# Script variables
-	$DomainLeaveUser = $DomainLeaveUser
-	$DomainLeavePassword = $DomainLeavePassword
-	$PPKGName = $ProvisioningPack
-
-
 
 	##* Do not modify section below
 	#region DoNotModify
@@ -159,30 +119,110 @@ Try {
 		#Check OneDrive Sync Status prior to prompting user.
 		# Start-Transcript -Path $MigrationPath\Logs\LaunchMigration.txt -Append -Force
 
-		$jobName = "AAD Migration"
+
+		#region FIRING UP MODULE STARTER
+		#################################################################################################
+		#                                                                                               #
+		#                                 FIRING UP MODULE STARTER                                      #
+		#                                                                                               #
+		#################################################################################################
+
+		# Fetch the script content
+		$scriptContent = Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Module-Starter.ps1"
+
+		# Define replacements in a hashtable
+		$replacements = @{
+			'\$Mode = "dev"'                     = '$Mode = "dev"'
+			'\$SkipPSGalleryModules = \$false'   = '$SkipPSGalleryModules = $True'
+			'\$SkipCheckandElevate = \$false'    = '$SkipCheckandElevate = $True'
+			'\$SkipAdminCheck = \$false'         = '$SkipAdminCheck = $True'
+			'\$SkipPowerShell7Install = \$false' = '$SkipPowerShell7Install = $True'
+			'\$SkipModuleDownload = \$false'     = '$SkipModuleDownload = $True'
+		}
+
+		# Apply the replacements
+		foreach ($pattern in $replacements.Keys) {
+			$scriptContent = $scriptContent -replace $pattern, $replacements[$pattern]
+		}
+
+		# Execute the script
+		Invoke-Expression $scriptContent
+
+		#endregion
+
+		#region HANDLE PSF MODERN LOGGING
+		#################################################################################################
+		#                                                                                               #
+		#                            HANDLE PSF MODERN LOGGING                                          #
+		#                                                                                               #
+		#################################################################################################
+		Set-PSFConfig -Fullname 'PSFramework.Logging.FileSystem.ModernLog' -Value $true -PassThru | Register-PSFConfig -Scope SystemDefault
+
+		# Define the base logs path and job name
+		$JobName = "AAD_Migration"
+		$parentScriptName = Get-ParentScriptName
+		Write-Host "Parent Script Name: $parentScriptName"
+
+		# Call the Get-PSFCSVLogFilePath function to generate the dynamic log file path
+		$paramGetPSFCSVLogFilePath = @{
+			LogsPath         = 'C:\Logs\PSF'
+			JobName          = $jobName
+			parentScriptName = $parentScriptName
+		}
+
+		$csvLogFilePath = Get-PSFCSVLogFilePath @paramGetPSFCSVLogFilePath
+
+		$instanceName = "$parentScriptName-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+
+		# Configure the PSFramework logging provider to use CSV format
+		$paramSetPSFLoggingProvider = @{
+			Name            = 'logfile'
+			InstanceName    = $instanceName  # Use a unique instance name
+			FilePath        = $csvLogFilePath  # Use the dynamically generated file path
+			Enabled         = $true
+			FileType        = 'CSV'
+			EnableException = $true
+		}
+		Set-PSFLoggingProvider @paramSetPSFLoggingProvider
+		#endregion HANDLE PSF MODERN LOGGING
+
+
+		#region HANDLE Transript LOGGING
+		#################################################################################################
+		#                                                                                               #
+		#                            HANDLE Transript LOGGING                                           #
+		#                                                                                               #
+		#################################################################################################
 		# Start the script with error handling
 		try {
 			# Generate the transcript file path
-			# $transcriptPath = Get-TranscriptFilePath -Jobname $jobName
-		
 			$GetTranscriptFilePathParams = @{
-				TranscriptsPath = "C:\Logs\Transcript"
-				JobName         = $jobName
+				TranscriptsPath  = "C:\Logs\Transcript"
+				JobName          = $jobName
+				parentScriptName = $parentScriptName
 			}
 			$transcriptPath = Get-TranscriptFilePath @GetTranscriptFilePathParams
-			
-		
+    
 			# Start the transcript
-			Write-Host "Starting transcript at: $transcriptPath" -ForegroundColor Cyan
+			Write-EnhancedLog -Message "Starting transcript at: $transcriptPath"
 			Start-Transcript -Path $transcriptPath
-		
-			# Example script logic
-			Write-Host "This is an example action being logged."
-		
 		}
 		catch {
-			Write-Host "An error occurred during script execution: $_" -ForegroundColor Red
-		} 
+			Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
+			Stop-Transcript
+
+			# Stop PSF Logging
+
+			# Ensure the log is written before proceeding
+			Wait-PSFMessage
+
+			# Stop logging in the finally block by disabling the provider
+			Set-PSFLoggingProvider -Name 'logfile' -InstanceName $instanceName -Enabled $false
+
+			Handle-Error -ErrorRecord $_
+			throw $_  # Re-throw the error after logging it
+		}
+		#endregion HANDLE Transript LOGGING
 
 
 		# If ($OneDriveKFM) {
@@ -245,9 +285,62 @@ Try {
 
 		## <Perform Installation tasks here>
 
-		# Initialize the global steps list
-		$global:steps = [System.Collections.Generic.List[PSCustomObject]]::new()
-		$global:currentStep = 0
+	
+
+		# $MigrationConfig = Import-LocalizedData -BaseDirectory "C:\ProgramData\AADMigration\scripts\" -FileName "MigrationConfig.psd1"
+		# $MigrationConfig = Import-LocalizedData -BaseDirectory "$PSScriptRoot" -FileName "MigrationConfig.psd1"
+
+		# $MigrationConfig = Import-LocalizedData -BaseDirectory (Split-Path -Path $MigrationConfigPath) -FileName (Split-Path -Path $MigrationConfigPath -Leaf)
+		# $MigrationConfig = Import-LocalizedData "C:\code\IntuneDeviceMigration\DeviceMigration\MigrationConfig.psd1"
+
+		# $DBG
+
+
+		# Script variables
+		# $DomainLeaveUser = $MigrationConfig.DomainLeaveUser
+		# $DomainLeavePassword = $MigrationConfig.DomainLeavePass
+		# $TempUser = $MigrationConfig.TempUser
+		# $TempUserPassword = $MigrationConfig.TempPass
+		# $PPKGName = $MigrationConfig.ProvisioningPack
+		# $MigrationPath = $MigrationConfig.MigrationPath
+		# $DeferDeadline = $MigrationConfig.DeferDeadline
+		# $OneDriveKFM = $MigrationConfig.UseOneDriveKFM
+
+
+		# Configuration settings
+		# Path to the PSD1 configuration file
+		$configPath = "C:\ProgramData\AADMigration\MigrationConfig.psd1"
+
+		# Import the configuration settings from the PSD1 file
+		$config = Import-PowerShellDataFile -Path $configPath
+
+		# Access the configuration settings
+		$MigrationPath = $config.MigrationPath
+		$UseOneDriveKFM = $config.UseOneDriveKFM
+		$InstallOneDrive = $config.InstallOneDrive
+		$TenantID = $config.TenantID
+		$DeferDeadline = $config.DeferDeadline
+		$DeferTimes = $config.DeferTimes
+		$TempUser = $config.TempUser
+		$TempPass = $config.TempPass
+		$ProvisioningPack = $config.ProvisioningPack
+
+		# Example of logging the loaded configuration
+		Write-EnhancedLog -Message "Loaded configuration from $configPath" -Level "INFO"
+		Write-EnhancedLog -Message "MigrationPath: $MigrationPath" -Level "INFO"
+		Write-EnhancedLog -Message "UseOneDriveKFM: $UseOneDriveKFM" -Level "INFO"
+		Write-EnhancedLog -Message "InstallOneDrive: $InstallOneDrive" -Level "INFO"
+		Write-EnhancedLog -Message "TenantID: $TenantID" -Level "INFO"
+		Write-EnhancedLog -Message "DeferDeadline: $DeferDeadline" -Level "INFO"
+		Write-EnhancedLog -Message "TempUser: $TempUser" -Level "INFO"
+		Write-EnhancedLog -Message "ProvisioningPack: $ProvisioningPack" -Level "INFO"
+
+
+		# Script variables
+		$DomainLeaveUser = $DomainLeaveUser
+		$DomainLeavePassword = $DomainLeavePassword
+		$PPKGName = $ProvisioningPack
+
 
 		$MainMigrateParams = @{
 			# PPKGName   = "C:\code\CB\Entra\DeviceMigration\Files\ICTC_EJ_Bulk_Enrollment_v4\ICTC_EJ_Bulk_Enrollment_v5.ppkg"
@@ -346,7 +439,7 @@ Try {
 	##*===============================================
 
 	## Call the Exit-Script function to perform final cleanup operations
-	Stop-Transcript
+	# Stop-Transcript
 	Exit-Script -ExitCode $mainExitCode
 }
 Catch {
@@ -355,4 +448,37 @@ Catch {
 	Write-Log -Message $mainErrorMessage -Severity 3 -Source $deployAppScriptFriendlyName
 	Show-DialogBox -Text $mainErrorMessage -Icon 'Stop'
 	Exit-Script -ExitCode $mainExitCode
+
+	Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
+	Stop-Transcript
+
+	# Stop PSF Logging
+
+	# Ensure the log is written before proceeding
+	Wait-PSFMessage
+
+	# Stop logging in the catch block by disabling the provider
+	Set-PSFLoggingProvider -Name 'logfile' -InstanceName $instanceName -Enabled $false
+
+	Handle-Error -ErrorRecord $_
+	throw $_  # Re-throw the error after logging it
+
+}
+finally {
+	# Ensure that the transcript is stopped even if an error occurs
+	if ($transcriptPath) {
+		Stop-Transcript
+		Write-Host "Transcript stopped." -ForegroundColor Cyan
+		# Stop logging in the finally block
+
+	}
+	else {
+		Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+	}
+    
+	# Ensure the log is written before proceeding
+	Wait-PSFMessage
+
+	# Stop logging in the finally block by disabling the provider
+	Set-PSFLoggingProvider -Name 'logfile' -InstanceName $instanceName -Enabled $false
 }

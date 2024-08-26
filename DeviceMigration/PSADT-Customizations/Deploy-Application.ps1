@@ -75,62 +75,6 @@ Try {
 	[string]$installName = 'Azure Active Directory Migration'
 	[string]$installTitle = 'AAD Migration Utility'
 
-	# $MigrationConfig = Import-LocalizedData -BaseDirectory "C:\ProgramData\AADMigration\scripts\" -FileName "MigrationConfig.psd1"
-	# $MigrationConfig = Import-LocalizedData -BaseDirectory "$PSScriptRoot" -FileName "MigrationConfig.psd1"
-
-	# $MigrationConfig = Import-LocalizedData -BaseDirectory (Split-Path -Path $MigrationConfigPath) -FileName (Split-Path -Path $MigrationConfigPath -Leaf)
-	# $MigrationConfig = Import-LocalizedData "C:\code\IntuneDeviceMigration\DeviceMigration\MigrationConfig.psd1"
-
-	# $DBG
-
-
-	# Script variables
-	# $DomainLeaveUser = $MigrationConfig.DomainLeaveUser
-	# $DomainLeavePassword = $MigrationConfig.DomainLeavePass
-	# $TempUser = $MigrationConfig.TempUser
-	# $TempUserPassword = $MigrationConfig.TempPass
-	# $PPKGName = $MigrationConfig.ProvisioningPack
-	# $MigrationPath = $MigrationConfig.MigrationPath
-	# $DeferDeadline = $MigrationConfig.DeferDeadline
-	# $OneDriveKFM = $MigrationConfig.UseOneDriveKFM
-
-
-	# Configuration settings
-	# Path to the PSD1 configuration file
-	$configPath = "C:\ProgramData\AADMigration\MigrationConfig.psd1"
-
-	# Import the configuration settings from the PSD1 file
-	$config = Import-PowerShellDataFile -Path $configPath
-
-	# Access the configuration settings
-	$MigrationPath = $config.MigrationPath
-	$UseOneDriveKFM = $config.UseOneDriveKFM
-	$InstallOneDrive = $config.InstallOneDrive
-	$TenantID = $config.TenantID
-	$DeferDeadline = $config.DeferDeadline
-	$DeferTimes = $config.DeferTimes
-	$TempUser = $config.TempUser
-	$TempPass = $config.TempPass
-	$ProvisioningPack = $config.ProvisioningPack
-
-	# Example of logging the loaded configuration
-	Write-EnhancedLog -Message "Loaded configuration from $configPath" -Level "INFO"
-	Write-EnhancedLog -Message "MigrationPath: $MigrationPath" -Level "INFO"
-	Write-EnhancedLog -Message "UseOneDriveKFM: $UseOneDriveKFM" -Level "INFO"
-	Write-EnhancedLog -Message "InstallOneDrive: $InstallOneDrive" -Level "INFO"
-	Write-EnhancedLog -Message "TenantID: $TenantID" -Level "INFO"
-	Write-EnhancedLog -Message "DeferDeadline: $DeferDeadline" -Level "INFO"
-	Write-EnhancedLog -Message "TempUser: $TempUser" -Level "INFO"
-	Write-EnhancedLog -Message "ProvisioningPack: $ProvisioningPack" -Level "INFO"
-
-
-	# Script variables
-	$DomainLeaveUser = $DomainLeaveUser
-	$DomainLeavePassword = $DomainLeavePassword
-	$PPKGName = $ProvisioningPack
-
-
-
 	##* Do not modify section below
 	#region DoNotModify
 
@@ -341,9 +285,62 @@ Try {
 
 		## <Perform Installation tasks here>
 
-		# Initialize the global steps list
-		$global:steps = [System.Collections.Generic.List[PSCustomObject]]::new()
-		$global:currentStep = 0
+	
+
+		# $MigrationConfig = Import-LocalizedData -BaseDirectory "C:\ProgramData\AADMigration\scripts\" -FileName "MigrationConfig.psd1"
+		# $MigrationConfig = Import-LocalizedData -BaseDirectory "$PSScriptRoot" -FileName "MigrationConfig.psd1"
+
+		# $MigrationConfig = Import-LocalizedData -BaseDirectory (Split-Path -Path $MigrationConfigPath) -FileName (Split-Path -Path $MigrationConfigPath -Leaf)
+		# $MigrationConfig = Import-LocalizedData "C:\code\IntuneDeviceMigration\DeviceMigration\MigrationConfig.psd1"
+
+		# $DBG
+
+
+		# Script variables
+		# $DomainLeaveUser = $MigrationConfig.DomainLeaveUser
+		# $DomainLeavePassword = $MigrationConfig.DomainLeavePass
+		# $TempUser = $MigrationConfig.TempUser
+		# $TempUserPassword = $MigrationConfig.TempPass
+		# $PPKGName = $MigrationConfig.ProvisioningPack
+		# $MigrationPath = $MigrationConfig.MigrationPath
+		# $DeferDeadline = $MigrationConfig.DeferDeadline
+		# $OneDriveKFM = $MigrationConfig.UseOneDriveKFM
+
+
+		# Configuration settings
+		# Path to the PSD1 configuration file
+		$configPath = "C:\ProgramData\AADMigration\MigrationConfig.psd1"
+
+		# Import the configuration settings from the PSD1 file
+		$config = Import-PowerShellDataFile -Path $configPath
+
+		# Access the configuration settings
+		$MigrationPath = $config.MigrationPath
+		$UseOneDriveKFM = $config.UseOneDriveKFM
+		$InstallOneDrive = $config.InstallOneDrive
+		$TenantID = $config.TenantID
+		$DeferDeadline = $config.DeferDeadline
+		$DeferTimes = $config.DeferTimes
+		$TempUser = $config.TempUser
+		$TempPass = $config.TempPass
+		$ProvisioningPack = $config.ProvisioningPack
+
+		# Example of logging the loaded configuration
+		Write-EnhancedLog -Message "Loaded configuration from $configPath" -Level "INFO"
+		Write-EnhancedLog -Message "MigrationPath: $MigrationPath" -Level "INFO"
+		Write-EnhancedLog -Message "UseOneDriveKFM: $UseOneDriveKFM" -Level "INFO"
+		Write-EnhancedLog -Message "InstallOneDrive: $InstallOneDrive" -Level "INFO"
+		Write-EnhancedLog -Message "TenantID: $TenantID" -Level "INFO"
+		Write-EnhancedLog -Message "DeferDeadline: $DeferDeadline" -Level "INFO"
+		Write-EnhancedLog -Message "TempUser: $TempUser" -Level "INFO"
+		Write-EnhancedLog -Message "ProvisioningPack: $ProvisioningPack" -Level "INFO"
+
+
+		# Script variables
+		$DomainLeaveUser = $DomainLeaveUser
+		$DomainLeavePassword = $DomainLeavePassword
+		# $PPKGName = $ProvisioningPack
+
 
 		$MainMigrateParams = @{
 			# PPKGName   = "C:\code\CB\Entra\DeviceMigration\Files\ICTC_EJ_Bulk_Enrollment_v4\ICTC_EJ_Bulk_Enrollment_v5.ppkg"
@@ -451,4 +448,37 @@ Catch {
 	Write-Log -Message $mainErrorMessage -Severity 3 -Source $deployAppScriptFriendlyName
 	Show-DialogBox -Text $mainErrorMessage -Icon 'Stop'
 	Exit-Script -ExitCode $mainExitCode
+
+	Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
+	Stop-Transcript
+
+	# Stop PSF Logging
+
+	# Ensure the log is written before proceeding
+	Wait-PSFMessage
+
+	# Stop logging in the finally block by disabling the provider
+	Set-PSFLoggingProvider -Name 'logfile' -InstanceName $instanceName -Enabled $false
+
+	Handle-Error -ErrorRecord $_
+	throw $_  # Re-throw the error after logging it
+
+}
+finally {
+	# Ensure that the transcript is stopped even if an error occurs
+	if ($transcriptPath) {
+		Stop-Transcript
+		Write-Host "Transcript stopped." -ForegroundColor Cyan
+		# Stop logging in the finally block
+
+	}
+	else {
+		Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+	}
+    
+	# Ensure the log is written before proceeding
+	Wait-PSFMessage
+
+	# Stop logging in the finally block by disabling the provider
+	Set-PSFLoggingProvider -Name 'logfile' -InstanceName $instanceName -Enabled $false
 }

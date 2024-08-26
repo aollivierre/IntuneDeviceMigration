@@ -111,46 +111,31 @@ try {
     #                                                                                               #
     #################################################################################################
 
+    # ################################################################################################################################
+    # ############### CALLING AS SYSTEM to simulate Intune deployment as SYSTEM (Uncomment for debugging) ############################
+    # ################################################################################################################################
+
+    # Example usage
+    $ensureRunningAsSystemParams = @{
+        PsExec64Path = Join-Path -Path $PSScriptRoot -ChildPath "private\PsExec64.exe"
+        ScriptPath   = $MyInvocation.MyCommand.Path
+        TargetFolder = Join-Path -Path $PSScriptRoot -ChildPath "private"
+    }
+
+    Ensure-RunningAsSystem @ensureRunningAsSystemParams
+
+    $pwshPath = Get-PowerShellPath
+
+    # Define the path to the deploy-application.ps1 script
+    $scriptPath = "$PSScriptRoot\deploy-application.ps1"
+
+    # Define the arguments for the script
+    $arguments = '-NoExit -ExecutionPolicy Bypass -File "' + $scriptPath + '" -DeploymentType "Install" -DeployMode "Interactive"'
+
+    # Start the process without hiding the window
+    Start-Process -FilePath $pwshPath -ArgumentList $arguments -Wait
     
-    # Example usage for Chrome bookmarks
-    $BackupChromeBookmarksToOneDriveParams = @{
-        SourcePath         = "$env:USERPROFILE\AppData\Local\Google\Chrome\User Data\Default"
-        BackupFolderName   = "ChromeBackup"
-        Exclude            = ".git"
-        RetryCount         = 2
-        WaitTime           = 5
-        RequiredSpaceGB    = 10
-        OneDriveBackupPath = "$env:OneDrive\Backups"
-        Scriptbasepath     = "$PSScriptroot"
-    }
-    Backup-UserFilesToOneDrive @BackupChromeBookmarksToOneDriveParams
-
-    # Example usage for Outlook signatures
-    $BackupOutlookSignaturesToOneDrive = @{
-        SourcePath         = "$env:USERPROFILE\AppData\Roaming\Microsoft\Signatures"
-        BackupFolderName   = "OutlookSignatures"
-        Exclude            = ".git"
-        RetryCount         = 2
-        WaitTime           = 5
-        RequiredSpaceGB    = 10
-        OneDriveBackupPath = "$env:OneDrive\Backups"
-        Scriptbasepath     = "$PSScriptroot"
-    }
-    Backup-UserFilesToOneDrive @BackupOutlookSignaturesToOneDrive
-
-    # Example usage for Downloads folder
-    $BackupDownloadsToOneDriveParams = @{
-        SourcePath         = "$env:USERPROFILE\Downloads"
-        BackupFolderName   = "DownloadsBackup"
-        Exclude            = ".git"
-        RetryCount         = 2
-        WaitTime           = 5
-        RequiredSpaceGB    = 10
-        OneDriveBackupPath = "$env:OneDrive\Backups"
-        Scriptbasepath     = "$PSScriptroot"
-    }
-    Backup-UserFilesToOneDrive @BackupDownloadsToOneDriveParams
-    #endregion
+    #endregion Script Logic
     
     #region HANDLE PSF LOGGING
     #################################################################################################
@@ -202,13 +187,10 @@ finally {
     else {
         Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
     }
-    # Disable-PSFLogging -Name 'logfile' -InstanceName $instanceName
-
     
     # Ensure the log is written before proceeding
     Wait-PSFMessage
 
     # Stop logging in the finally block by disabling the provider
     Set-PSFLoggingProvider -Name 'logfile' -InstanceName $instanceName -Enabled $false
-
 }

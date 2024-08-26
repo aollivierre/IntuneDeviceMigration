@@ -120,7 +120,7 @@ try {
         PowershellPath      = "C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe"
         ExecutionPolicy     = "Unrestricted"
         RunOnceName         = "NextRun"
-        RebootAfterInstallation = $false
+        RebootAfterInstallation = $true
     }
     PostRunOnce-Phase1EntraJoin @PostRunOncePhase1EntraJoinParams
     #endregion
