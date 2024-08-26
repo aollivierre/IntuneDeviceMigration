@@ -87,7 +87,14 @@ try {
 }
 catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
-    Stop-Transcript
+    if ($transcriptPath) {
+        Stop-Transcript
+        Write-Host "Transcript stopped." -ForegroundColor Cyan
+        # Stop logging in the finally block
+    }
+    else {
+        Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+    }
 
     # Stop PSF Logging
 
@@ -112,7 +119,7 @@ try {
     # Example usage
 
     #blocks user input, displays a migration in progress form, creates a scheduled task for post-migration cleanup, escrows the BitLocker recovery key, sets various registry values for legal noctices, and optionally restarts the computer.
-    $params = @{
+    $PostRunOncePhase2EscrowBitlockerParams = @{
         ImagePath             = "C:\ProgramData\AADMigration\Files\MigrationInProgress.bmp"
         TaskPath              = "AAD Migration"
         TaskName              = "Run Post-migration cleanup"
@@ -142,8 +149,8 @@ try {
         }
         RebootAfterCompletion = $false
     }
-    PostRunOnce-Phase2EscrowBitlocker @params
-    #endregion
+    PostRunOnce-Phase2EscrowBitlocker @PostRunOncePhase2EscrowBitlockerParams
+    #endregion Script Logic
     
     #region HANDLE PSF LOGGING
     #################################################################################################
@@ -171,7 +178,14 @@ try {
 }
 catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
-    Stop-Transcript
+    if ($transcriptPath) {
+        Stop-Transcript
+        Write-Host "Transcript stopped." -ForegroundColor Cyan
+        # Stop logging in the finally block
+    }
+    else {
+        Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+    }
 
     # Stop PSF Logging
 
@@ -190,7 +204,6 @@ finally {
         Stop-Transcript
         Write-Host "Transcript stopped." -ForegroundColor Cyan
         # Stop logging in the finally block
-
     }
     else {
         Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red

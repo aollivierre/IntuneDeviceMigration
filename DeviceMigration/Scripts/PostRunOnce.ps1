@@ -87,7 +87,14 @@ try {
 }
 catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
-    Stop-Transcript
+    if ($transcriptPath) {
+        Stop-Transcript
+        Write-Host "Transcript stopped." -ForegroundColor Cyan
+        # Stop logging in the finally block
+    }
+    else {
+        Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+    }
 
     # Stop PSF Logging
 
@@ -113,13 +120,13 @@ try {
 
     #The following is mainly responsible about enrolling the device in the tenant's Entra ID via a PPKG
     $PostRunOncePhase1EntraJoinParams = @{
-        MigrationConfigPath = "C:\ProgramData\AADMigration\MigrationConfig.psd1"
-        ImagePath           = "C:\ProgramData\AADMigration\Files\MigrationInProgress.bmp"
-        RunOnceScriptPath   = "C:\ProgramData\AADMigration\Scripts\PostRunOnce2.ps1"
-        RunOnceKey          = "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
-        PowershellPath      = "C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe"
-        ExecutionPolicy     = "Unrestricted"
-        RunOnceName         = "NextRun"
+        MigrationConfigPath     = "C:\ProgramData\AADMigration\MigrationConfig.psd1"
+        ImagePath               = "C:\ProgramData\AADMigration\Files\MigrationInProgress.bmp"
+        RunOnceScriptPath       = "C:\ProgramData\AADMigration\Scripts\PostRunOnce2.ps1"
+        RunOnceKey              = "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
+        PowershellPath          = "C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe"
+        ExecutionPolicy         = "Unrestricted"
+        RunOnceName             = "NextRun"
         RebootAfterInstallation = $true
     }
     PostRunOnce-Phase1EntraJoin @PostRunOncePhase1EntraJoinParams
@@ -151,7 +158,14 @@ try {
 }
 catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
-    Stop-Transcript
+    if ($transcriptPath) {
+        Stop-Transcript
+        Write-Host "Transcript stopped." -ForegroundColor Cyan
+        # Stop logging in the finally block
+    }
+    else {
+        Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+    }
 
     # Stop PSF Logging
 
