@@ -150,7 +150,7 @@ try {
         Scriptbasepath     = "$PSScriptroot"
     }
     Backup-UserFilesToOneDrive @BackupDownloadsToOneDriveParams
-    #endregion
+    #endregion Script Logic
     
     #region HANDLE PSF LOGGING
     #################################################################################################
@@ -178,7 +178,12 @@ try {
 }
 catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
-    Stop-Transcript
+    if ($transcriptPath) {
+        Stop-Transcript
+        Write-Host "Transcript stopped." -ForegroundColor Cyan
+        # Stop logging in the finally block
+
+    }
 
     # Stop PSF Logging
 

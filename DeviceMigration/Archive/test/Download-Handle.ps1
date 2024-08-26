@@ -11,11 +11,11 @@ $scriptContent = Invoke-RestMethod "https://raw.githubusercontent.com/aollivierr
 # Define replacements in a hashtable
 $replacements = @{
     '\$Mode = "dev"'                     = '$Mode = "dev"'
-    '\$SkipPSGalleryModules = \$false'   = '$SkipPSGalleryModules = $false'
-    '\$SkipCheckandElevate = \$false'    = '$SkipCheckandElevate = $false'
-    '\$SkipAdminCheck = \$false'         = '$SkipAdminCheck = $false'
-    '\$SkipPowerShell7Install = \$false' = '$SkipPowerShell7Install = $false'
-    '\$SkipModuleDownload = \$false'     = '$SkipModuleDownload = $false'
+    '\$SkipPSGalleryModules = \$false'   = '$SkipPSGalleryModules = $True'
+    '\$SkipCheckandElevate = \$false'    = '$SkipCheckandElevate = $True'
+    '\$SkipAdminCheck = \$false'         = '$SkipAdminCheck = $True'
+    '\$SkipPowerShell7Install = \$false' = '$SkipPowerShell7Install = $True'
+    '\$SkipModuleDownload = \$false'     = '$SkipModuleDownload = $True'
 }
 
 # Apply the replacements
@@ -26,7 +26,7 @@ foreach ($pattern in $replacements.Keys) {
 # Execute the script
 Invoke-Expression $scriptContent
 
-#endregion FIRING UP MODULE STARTER
+#endregion
 
 #region HANDLE PSF MODERN LOGGING
 #################################################################################################
@@ -39,7 +39,7 @@ Set-PSFConfig -Fullname 'PSFramework.Logging.FileSystem.ModernLog' -Value $true 
 # Define the base logs path and job name
 $JobName = "AAD_Migration"
 $parentScriptName = Get-ParentScriptName
-Write-EnhancedLog -Message "Parent Script Name: $parentScriptName"
+Write-Host "Parent Script Name: $parentScriptName"
 
 # Call the Get-PSFCSVLogFilePath function to generate the dynamic log file path
 $paramGetPSFCSVLogFilePath = @{
@@ -49,7 +49,6 @@ $paramGetPSFCSVLogFilePath = @{
 }
 
 $csvLogFilePath = Get-PSFCSVLogFilePath @paramGetPSFCSVLogFilePath
-Write-EnhancedLog -Message "Generated Log File Path: $csvLogFilePath"
 
 $instanceName = "$parentScriptName-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
 
@@ -101,29 +100,10 @@ catch {
 
     Handle-Error -ErrorRecord $_
     throw $_  # Re-throw the error after logging it
-} 
-#endregion
+}
+#endregion HANDLE Transript LOGGING
 
 try {
-
-    #region CALLING AS SYSTEM
-    #################################################################################################
-    #                                                                                               #
-    #                                 CALLING AS SYSTEM                                             #
-    #                Simulate Intune deployment as SYSTEM (Uncomment for debugging)                 #
-    #                                                                                               #
-    #################################################################################################
-
-    $ensureRunningAsSystemParams = @{
-        PsExec64Path = Join-Path -Path $PSScriptRoot -ChildPath "private\PsExec64.exe"
-        ScriptPath   = $MyInvocation.MyCommand.Path
-        TargetFolder = Join-Path -Path $PSScriptRoot -ChildPath "private"
-    }
-
-    Ensure-RunningAsSystem @ensureRunningAsSystemParams
-    #endregion
-
-
     #region Script Logic
     #################################################################################################
     #                                                                                               #
@@ -131,70 +111,12 @@ try {
     #                                                                                               #
     #################################################################################################
 
-    #region END Downloading Service UI and PSADT
-    #################################################################################################
-    #                                                                                               #
-    #                       END Downloading Service UI and PSADT                                    #
-    #                                                                                               #
-    #################################################################################################
-    $DownloadAndInstallServiceUIparams = @{
-        TargetFolder           = "$PSScriptRoot"
-        DownloadUrl            = "https://download.microsoft.com/download/3/3/9/339BE62D-B4B8-4956-B58D-73C4685FC492/MicrosoftDeploymentToolkit_x64.msi"
-        MsiFileName            = "MicrosoftDeploymentToolkit_x64.msi"
-        InstalledServiceUIPath = "C:\Program Files\Microsoft Deployment Toolkit\Templates\Distribution\Tools\x64\ServiceUI.exe"
+    $params = @{
+        TargetFolder = "C:\ProgramData\SystemTools"
     }
-    Download-And-Install-ServiceUI @DownloadAndInstallServiceUIparams
-
-    $DownloadPSAppDeployToolkitParams = @{
-        GithubRepository     = 'PSAppDeployToolkit/PSAppDeployToolkit'
-        FilenamePatternMatch = '*.zip'
-        DestinationDirectory = $PSScriptRoot
-        CustomizationsPath   = 'C:\code\IntuneDeviceMigration\DeviceMigration\PSADT-Customizations'
-    }
-    Download-PSAppDeployToolkit @DownloadPSAppDeployToolkitParams
-    #endregion
-
-    # Import migration configuration
-    $ConfigFileName = "MigrationConfig.psd1"
-    $ConfigBaseDirectory = $PSScriptRoot
-    $MigrationConfig = Import-LocalizedData -BaseDirectory $ConfigBaseDirectory -FileName $ConfigFileName
-
-    $TenantID = $MigrationConfig.TenantID
-    $OneDriveKFM = $MigrationConfig.UseOneDriveKFM
-    $InstallOneDrive = $MigrationConfig.InstallOneDrive
-
-    # Define parameters
-    $PrepareAADMigrationParams = @{
-        MigrationPath       = "C:\ProgramData\AADMigration"
-        PSScriptbase        = $PSScriptRoot
-        ConfigBaseDirectory = $PSScriptRoot
-        ConfigFileName      = "MigrationConfig.psd1"
-        TenantID            = $TenantID
-        OneDriveKFM         = $OneDriveKFM
-        InstallOneDrive     = $InstallOneDrive
-    }
-    Prepare-AADMigration @PrepareAADMigrationParams
-
-
-    $CreateInteractiveMigrationTaskParams = @{
-        TaskPath               = "AAD Migration"
-        TaskName               = "PR4B-AADM Launch PSADT for Interactive Migration"
-        ServiceUIPath          = "C:\ProgramData\AADMigration\ServiceUI.exe"
-        ToolkitExecutablePath  = "C:\ProgramData\AADMigration\PSAppDeployToolkit\Toolkit\Deploy-Application.exe"
-        ProcessName            = "explorer.exe"
-        DeploymentType         = "Install"
-        DeployMode             = "Interactive"
-        TaskTriggerType        = "AtLogOn"
-        TaskRepetitionDuration = "P1D"  # 1 day
-        TaskRepetitionInterval = "PT15M"  # 15 minutes
-        TaskPrincipalUserId    = "NT AUTHORITY\SYSTEM"
-        TaskRunLevel           = "Highest"
-        TaskDescription        = "AADM Launch PSADT for Interactive Migration Version 1.0"
-        Delay                  = "PT2H"  # 2 hours delay before starting
-    }
-
-    Create-InteractiveMigrationTask @CreateInteractiveMigrationTaskParams
-    #endregion
+    Download-Handle @params
+    
+    #endregion Script Logic
     
     #region HANDLE PSF LOGGING
     #################################################################################################
@@ -213,12 +135,11 @@ try {
     #     PSFPath                   = "C:\Logs\PSF"
     #     ParentScriptName          = $parentScriptName
     #     JobName                   = $JobName
-    #     SkipSYSTEMLogCopy         = $false
-    #     SkipSYSTEMLogRemoval      = $false
+    #     SkipSYSTEMLogCopy         = $true
+    #     SkipSYSTEMLogRemoval      = $true
     # }
 
     # Handle-PSFLogging @HandlePSFLoggingParams
-
     #endregion
 }
 catch {
@@ -227,6 +148,7 @@ catch {
         Stop-Transcript
         Write-Host "Transcript stopped." -ForegroundColor Cyan
         # Stop logging in the finally block
+
     }
 
     # Stop PSF Logging
@@ -251,6 +173,8 @@ finally {
     else {
         Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
     }
+    # Disable-PSFLogging -Name 'logfile' -InstanceName $instanceName
+
     
     # Ensure the log is written before proceeding
     Wait-PSFMessage
@@ -259,3 +183,6 @@ finally {
     Set-PSFLoggingProvider -Name 'logfile' -InstanceName $instanceName -Enabled $false
 
 }
+
+
+
