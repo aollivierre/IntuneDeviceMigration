@@ -159,62 +159,26 @@ Try {
 		#Check OneDrive Sync Status prior to prompting user.
 		# Start-Transcript -Path $MigrationPath\Logs\LaunchMigration.txt -Append -Force
 
-
-		
-		function Get-TranscriptFilePath {
-			try {
-				# Log the start of the function
-				Write-Host "Starting Get-TranscriptFilePath..." -ForegroundColor Cyan
-
-				# Check if running as SYSTEM using Test-RunningAsSystem
-				$isSystem = Test-RunningAsSystem
-				Write-Host "Is running as SYSTEM: $isSystem" -ForegroundColor Yellow
-
-				if ($isSystem) {
-					# If running as SYSTEM, use hostname, job name, and timestamp
-					$jobName = "AAD Migration"  # Replace with your actual job name
-					$hostname = $env:COMPUTERNAME
-					$timestamp = Get-Date -Format "yyyy-MM-dd-HH-mm-ss"
-					$logFilePath = "C:\Logs\$hostname-$jobName-SYSTEM-transcript-$timestamp.log"
-					Write-Host "Generated log file path for SYSTEM: $logFilePath" -ForegroundColor Green
-				}
-				else {
-					# If not running as SYSTEM, use the calling function name
-					$callStack = Get-PSCallStack
-					$callerFunction = if ($callStack.Count -ge 2) { $callStack[1].Command } else { 'UnknownFunction' }
-					$currentDate = Get-Date -Format "yyyy-MM-dd"
-					$logFilePath = "C:\Logs\$callerFunction-transcript-$currentDate.log"
-					Write-Host "Generated log file path for non-SYSTEM: $logFilePath" -ForegroundColor Green
-				}
-
-				# Ensure the log directory exists
-				if (-not (Test-Path -Path (Split-Path $logFilePath -Parent))) {
-					New-Item -Path (Split-Path $logFilePath -Parent) -ItemType Directory -Force
-					Write-Host "Created directory for log file: $(Split-Path $logFilePath -Parent)" -ForegroundColor Green
-				}
-
-				return $logFilePath
-			}
-			catch {
-				Write-Host "An error occurred in Get-TranscriptFilePath: $_" -ForegroundColor Red
-				throw $_  # Re-throw the error after logging it
-			}
-		}
-
-
-
+		$jobName = "AAD Migration"
 		# Start the script with error handling
 		try {
 			# Generate the transcript file path
-			$transcriptPath = Get-TranscriptFilePath
-
+			# $transcriptPath = Get-TranscriptFilePath -Jobname $jobName
+		
+			$GetTranscriptFilePathParams = @{
+				TranscriptsPath = "C:\Logs\Transcript"
+				JobName         = $jobName
+			}
+			$transcriptPath = Get-TranscriptFilePath @GetTranscriptFilePathParams
+			
+		
 			# Start the transcript
 			Write-Host "Starting transcript at: $transcriptPath" -ForegroundColor Cyan
 			Start-Transcript -Path $transcriptPath
-
+		
 			# Example script logic
 			Write-Host "This is an example action being logged."
-
+		
 		}
 		catch {
 			Write-Host "An error occurred during script execution: $_" -ForegroundColor Red

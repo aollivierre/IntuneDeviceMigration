@@ -90,16 +90,10 @@ catch {
     Stop-Transcript
 
     # Stop PSF Logging
-
-    # Ensure the log is written before proceeding
-    Wait-PSFMessage
-
-    # Stop logging in the finally block by disabling the provider
-    Set-PSFLoggingProvider -Name 'logfile' -InstanceName $instanceName -Enabled $false
-
+    Disable-PSFLogging -Name 'logfile' -InstanceName $instanceName
     Handle-Error -ErrorRecord $_
     throw $_  # Re-throw the error after logging it
-}
+} 
 #endregion HANDLE Transript LOGGING
 
 try {
@@ -110,12 +104,39 @@ try {
     #                                                                                               #
     #################################################################################################
     # Example usage
-    $CheckODSyncUtilStatusParams = @{
-        ScriptPath     = "C:\ProgramData\AADMigration\Files\ODSyncUtil"
-        LogFolderName  = "logs"
-        StatusFileName = "ODSyncUtilStatus.json"
+
+    # performs cleanup tasks after migration, including removing temporary user accounts, disabling local user accounts, removing scheduled tasks, clearing OneDrive cache, and setting registry values for disabling legal notices
+    $ExecuteMigrationCleanupTasksParams = @{
+        TempUser             = "MigrationInProgress"
+        RegistrySettings     = @{
+            "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" = @{
+                "dontdisplaylastusername" = @{
+                    "Type" = "DWORD"
+                    "Data" = "0"
+                }
+                "legalnoticecaption"      = @{
+                    "Type" = "String"
+                    "Data" = $null
+                }
+                "legalnoticetext"         = @{
+                    "Type" = "String"
+                    "Data" = $null
+                }
+            }
+            "HKLM:\Software\Policies\Microsoft\Windows\Personalization"       = @{
+                "NoLockScreen" = @{
+                    "Type" = "DWORD"
+                    "Data" = "0"
+                }
+            }
+        }
+        MigrationDirectories = @(
+            "C:\ProgramData\AADMigration\Files",
+            "C:\ProgramData\AADMigration\Scripts",
+            "C:\ProgramData\AADMigration\Toolkit"
+        )
     }
-    Check-ODSyncUtilStatus @CheckODSyncUtilStatusParams
+    Execute-MigrationCleanupTasks @ExecuteMigrationCleanupTasksParams
     #endregion
     
     #region HANDLE PSF LOGGING
@@ -178,3 +199,4 @@ finally {
     Set-PSFLoggingProvider -Name 'logfile' -InstanceName $instanceName -Enabled $false
 
 }
+
