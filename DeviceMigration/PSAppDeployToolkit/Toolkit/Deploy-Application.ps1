@@ -224,6 +224,65 @@ Try {
 		}
 		#endregion HANDLE Transript LOGGING
 
+
+		If ($OneDriveKFM) {
+
+			# 	Write-Output "OneDriveKFM flag is set to True. Checking Sync Status before continuing."
+
+			# 	#Check the most recent OD4B Sync status. Write error to event log if not healthy and exit
+			# 	Try {
+
+			# 		$Events = Get-EventLog -LogName Application -EntryType Information -Source 'AAD_Migration_Script'
+
+			# 		$LastEvent = $Events[0].InstanceId
+			# 		$LastEvent
+
+			# 	}
+			# 	Catch {
+
+			# 		Write-Output "No OneDrive Sync status found. Exiting migration utility; will retry on next logon."
+			# 		Exit 3
+
+			# 	}
+
+			# 	If ($LastEvent -eq 1337) {
+
+
+			# 		Write-Output "OneDrive Sync status is considered healthy, continuing."
+
+
+			# 	}
+			# 	Else {
+
+			# 		Write-Output "OneDrive sync status returned a value of $LastEvent. Migration will not launch at this time."
+			# 		Exit 2
+
+			# 	}
+
+		}
+
+		
+
+		# $MigrationConfig = Import-LocalizedData -BaseDirectory "C:\ProgramData\AADMigration\scripts\" -FileName "MigrationConfig.psd1"
+		# $MigrationConfig = Import-LocalizedData -BaseDirectory "$PSScriptRoot" -FileName "MigrationConfig.psd1"
+
+		# $MigrationConfig = Import-LocalizedData -BaseDirectory (Split-Path -Path $MigrationConfigPath) -FileName (Split-Path -Path $MigrationConfigPath -Leaf)
+		# $MigrationConfig = Import-LocalizedData "C:\code\IntuneDeviceMigration\DeviceMigration\MigrationConfig.psd1"
+
+		# $DBG
+
+
+		# Script variables
+		# $DomainLeaveUser = $MigrationConfig.DomainLeaveUser
+		# $DomainLeavePassword = $MigrationConfig.DomainLeavePass
+		# $TempUser = $MigrationConfig.TempUser
+		# $TempUserPassword = $MigrationConfig.TempPass
+		# $PPKGName = $MigrationConfig.ProvisioningPack
+		# $MigrationPath = $MigrationConfig.MigrationPath
+		# $DeferDeadline = $MigrationConfig.DeferDeadline
+		# $OneDriveKFM = $MigrationConfig.UseOneDriveKFM
+
+
 		# Configuration settings
 		# Path to the PSD1 configuration file
 		$configPath = "C:\ProgramData\AADMigration\MigrationConfig.psd1"
@@ -458,15 +517,7 @@ Catch {
 	Exit-Script -ExitCode $mainExitCode
 
 	Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
-	if ($transcriptPath) {
-		Stop-Transcript
-		Write-EnhancedLog -Message "Transcript stopped." -Level 'NOTICE'
-		# Stop logging in the finally block
-
-	}
-	else {
-		Write-EnhancedLog -Message "Transcript was not started due to an earlier error." -Level 'ERROR'
-	}
+	Stop-Transcript
 
 	# Stop PSF Logging
 
