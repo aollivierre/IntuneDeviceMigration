@@ -120,12 +120,13 @@ try {
 
     #blocks user input, displays a migration in progress form, creates a scheduled task for post-migration cleanup, escrows the BitLocker recovery key, sets various registry values for legal noctices, and optionally restarts the computer.
     $PostRunOncePhase2EscrowBitlockerParams = @{
-        ImagePath             = "C:\ProgramData\AADMigration\Files\MigrationInProgress.bmp"
-        TaskPath              = "AAD Migration"
-        TaskName              = "Run Post-migration cleanup"
-        ScriptPath            = "C:\ProgramData\AADMigration\Scripts\ExecuteMigrationCleanupTasks.ps1"
-        BitlockerDrives       = @("C:", "D:")
-        RegistrySettings      = @{
+        ImagePath        = "C:\ProgramData\AADMigration\Files\MigrationInProgress.bmp"
+        TaskPath         = "AAD Migration"
+        TaskName         = "Run Post-migration cleanup"
+        ScriptPath       = "C:\ProgramData\AADMigration\Scripts\ExecuteMigrationCleanupTasks.ps1"
+        # BitlockerDrives       = @("C:", "D:")
+        BitlockerDrives  = @("C:")
+        RegistrySettings = @{
             "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"     = @{
                 "AutoAdminLogon" = @{
                     "Type" = "DWORD"
@@ -147,7 +148,7 @@ try {
                 }
             }
         }
-        RebootAfterCompletion = $false
+        Mode             = "Dev"
     }
     PostRunOnce-Phase2EscrowBitlocker @PostRunOncePhase2EscrowBitlockerParams
     #endregion Script Logic

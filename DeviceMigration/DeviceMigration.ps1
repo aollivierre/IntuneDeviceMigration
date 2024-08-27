@@ -1,3 +1,11 @@
+param (
+    [string]$Mode = "dev"
+    # [bool]$SkipPSGalleryModules = $false,
+    # [bool]$SkipCheckandElevate = $false,
+    # [bool]$SkipPowerShell7Install = $false,
+    # [bool]$SkipModuleDownload = $false
+)
+
 #region FIRING UP MODULE STARTER
 #################################################################################################
 #                                                                                               #
@@ -27,6 +35,23 @@ foreach ($pattern in $replacements.Keys) {
 Invoke-Expression $scriptContent
 
 #endregion FIRING UP MODULE STARTER
+
+
+#region Cleaning up Logs
+#################################################################################################
+#                                                                                               #
+#                            Cleaning up Logs                                                   #
+#                                                                                               #
+#################################################################################################
+if ($Mode -eq "Dev") {
+    Write-EnhancedLog -Message "Removing Logs in Dev Mode " -Level "WARNING"
+    Remove-LogsFolder -LogFolderPath "C:\Logs"
+    Write-EnhancedLog -Message "Migration in progress form displayed" -Level "INFO"
+}
+else {
+    Write-EnhancedLog -Message "Skipping Removing Logs in Prod mode" -Level "WARNING"
+}
+#endregion Cleaning up Logs
 
 #region HANDLE PSF MODERN LOGGING
 #################################################################################################
@@ -194,7 +219,135 @@ try {
     }
 
     Create-InteractiveMigrationTask @CreateInteractiveMigrationTaskParams
-    #endregion
+
+
+
+    # Show migration in progress form
+    if ($Mode -eq "dev") {
+        Write-EnhancedLog -Message "Running all Post Run Once and Post Run Scheduled Tasks in Dev Mode" -Level "WARNING"
+     
+    
+        $taskParams = @{
+            TaskPath = "\AAD Migration"
+            TaskName = "PR4B-AADM Launch PSADT for Interactive Migration"
+        }
+
+        # Trigger OneDrive Sync Status Scheduled Task
+        Trigger-ScheduledTask @taskParams
+
+
+        # Post Run 1
+        #The following is mainly responsible about enrolling the device in the tenant's Entra ID via a PPKG
+        $PostRunOncePhase1EntraJoinParams = @{
+            MigrationConfigPath = "C:\ProgramData\AADMigration\MigrationConfig.psd1"
+            ImagePath           = "C:\ProgramData\AADMigration\Files\MigrationInProgress.bmp"
+            RunOnceScriptPath   = "C:\ProgramData\AADMigration\Scripts\PostRunOnce2.ps1"
+            RunOnceKey          = "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
+            PowershellPath      = "C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe"
+            ExecutionPolicy     = "Unrestricted"
+            RunOnceName         = "NextRun"
+            Mode                = "Dev"
+        }
+        PostRunOnce-Phase1EntraJoin @PostRunOncePhase1EntraJoinParams
+
+
+
+        # Post Run 2
+        #blocks user input, displays a migration in progress form, creates a scheduled task for post-migration cleanup, escrows the BitLocker recovery key, sets various registry values for legal noctices, and optionally restarts the computer.
+        $PostRunOncePhase2EscrowBitlockerParams = @{
+            ImagePath        = "C:\ProgramData\AADMigration\Files\MigrationInProgress.bmp"
+            TaskPath         = "AAD Migration"
+            TaskName         = "Run Post-migration cleanup"
+            ScriptPath       = "C:\ProgramData\AADMigration\Scripts\ExecuteMigrationCleanupTasks.ps1"
+            # BitlockerDrives       = @("C:", "D:")
+            BitlockerDrives  = @("C:")
+            RegistrySettings = @{
+                "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"     = @{
+                    "AutoAdminLogon" = @{
+                        "Type" = "DWORD"
+                        "Data" = "0"
+                    }
+                }
+                "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" = @{
+                    "dontdisplaylastusername" = @{
+                        "Type" = "DWORD"
+                        "Data" = "1"
+                    }
+                    "legalnoticecaption"      = @{
+                        "Type" = "String"
+                        "Data" = "Migration Completed"
+                    }
+                    "legalnoticetext"         = @{
+                        "Type" = "String"
+                        "Data" = "This PC has been migrated to Azure Active Directory. Please log in to Windows using your email address and password."
+                    }
+                }
+            }
+            Mode             = "Dev"
+        }
+        PostRunOnce-Phase2EscrowBitlocker @PostRunOncePhase2EscrowBitlockerParams
+
+
+
+        $taskParams = @{
+            TaskPath = "\AAD Migration"
+            TaskName = "Run Post-migration cleanup"
+        }
+
+        # Trigger OneDrive Sync Status Scheduled Task
+        Trigger-ScheduledTask @taskParams
+
+
+        # Post Run 3
+        # Scheduled task (not Once) for cleaning up temp user accounts and disabling all local accounts
+        # $ExecuteMigrationCleanupTasksParams = @{
+        #     TempUser             = "MigrationInProgress"
+        #     RegistrySettings     = @{
+        #         "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" = @{
+        #             "dontdisplaylastusername" = @{
+        #                 "Type" = "DWORD"
+        #                 "Data" = "0"
+        #             }
+        #             "legalnoticecaption"      = @{
+        #                 "Type" = "String"
+        #                 "Data" = $null
+        #             }
+        #             "legalnoticetext"         = @{
+        #                 "Type" = "String"
+        #                 "Data" = $null
+        #             }
+        #         }
+        #         "HKLM:\Software\Policies\Microsoft\Windows\Personalization"       = @{
+        #             "NoLockScreen" = @{
+        #                 "Type" = "DWORD"
+        #                 "Data" = "0"
+        #             }
+        #         }
+        #     }
+        #     MigrationDirectories = @(
+        #         "C:\ProgramData\AADMigration\Files",
+        #         "C:\ProgramData\AADMigration\Scripts",
+        #         "C:\ProgramData\AADMigration\Toolkit"
+        #     )
+        #     Mode                 = "Dev"
+        # }
+        # Execute-MigrationCleanupTasks @ExecuteMigrationCleanupTasksParams
+
+
+        Write-EnhancedLog -Message "All Post Run Once and Post Run Scheduled Tasks in Dev Mode completed" -Level "INFO"
+    }
+    else {
+        Write-EnhancedLog -Message "Skipping Displaying Migration in Progress form in Dev mode" -Level "WARNING"
+    }
+
+
+
+
+
+
+
+
+    #endregion Script Logic
     
     #region HANDLE PSF LOGGING
     #################################################################################################

@@ -331,9 +331,10 @@ Try {
 			# Trigger OneDrive Sync Status Scheduled Task
 			Trigger-ScheduledTask @taskParams
 		
+
 			# Example usage
 			$params = @{
-				LogFolder      = "C:\ProgramData\AADMigration\logs"
+				LogFolder      = "logs"
 				StatusFileName = "ODSyncUtilStatus.json"
 			}
 			$result = Analyze-OneDriveSyncUtilStatus @params

@@ -135,6 +135,7 @@ try {
             "C:\ProgramData\AADMigration\Scripts",
             "C:\ProgramData\AADMigration\Toolkit"
         )
+        Mode                 = "Dev"
     }
     Execute-MigrationCleanupTasks @ExecuteMigrationCleanupTasksParams
     #endregion

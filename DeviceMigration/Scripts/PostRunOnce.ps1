@@ -120,14 +120,14 @@ try {
 
     #The following is mainly responsible about enrolling the device in the tenant's Entra ID via a PPKG
     $PostRunOncePhase1EntraJoinParams = @{
-        MigrationConfigPath     = "C:\ProgramData\AADMigration\MigrationConfig.psd1"
-        ImagePath               = "C:\ProgramData\AADMigration\Files\MigrationInProgress.bmp"
-        RunOnceScriptPath       = "C:\ProgramData\AADMigration\Scripts\PostRunOnce2.ps1"
-        RunOnceKey              = "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
-        PowershellPath          = "C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe"
-        ExecutionPolicy         = "Unrestricted"
-        RunOnceName             = "NextRun"
-        RebootAfterInstallation = $true
+        MigrationConfigPath = "C:\ProgramData\AADMigration\MigrationConfig.psd1"
+        ImagePath           = "C:\ProgramData\AADMigration\Files\MigrationInProgress.bmp"
+        RunOnceScriptPath   = "C:\ProgramData\AADMigration\Scripts\PostRunOnce2.ps1"
+        RunOnceKey          = "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
+        PowershellPath      = "C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe"
+        ExecutionPolicy     = "Unrestricted"
+        RunOnceName         = "NextRun"
+        Mode                = "Dev"
     }
     PostRunOnce-Phase1EntraJoin @PostRunOncePhase1EntraJoinParams
     #endregion
