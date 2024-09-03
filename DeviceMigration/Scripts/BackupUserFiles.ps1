@@ -88,7 +88,15 @@ try {
 }
 catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
-    Stop-Transcript
+    if ($transcriptPath) {
+        Stop-Transcript
+        Write-Host "Transcript stopped." -ForegroundColor Cyan
+        # Stop logging in the finally block
+
+    }
+    else {
+        Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+    }
 
     # Stop PSF Logging
 
@@ -184,6 +192,9 @@ catch {
         # Stop logging in the finally block
 
     }
+    else {
+        Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+    }
 
     # Stop PSF Logging
 
@@ -207,7 +218,7 @@ finally {
     else {
         Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
     }
-    # Disable-PSFLogging -Name 'logfile' -InstanceName $instanceName
+    # 
 
     
     # Ensure the log is written before proceeding

@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WindowsCustomizations>
+  <PackageConfig xmlns="urn:schemas-Microsoft-com:Windows-ICD-Package-Config.v1.0">
+    <ID>{995f01d3-18f1-4173-a8f3-a63003d78984}</ID>
+    <Name>ICTC_Project_1</Name>
+    <Version>1.1</Version>
+    <OwnerType>OEM</OwnerType>
+    <Rank>0</Rank>
+    <Notes />
+  </PackageConfig>
+  <Settings xmlns="urn:schemas-microsoft-com:windows-provisioning">
+    <Customizations>
+      <Common>
+        <Accounts>
+          <Azure>
+            <Authority>https://login.microsoftonline.com/common</Authority>
+            <BPRT>0.AS0AZuXatY-t4USZKVZp8duzQ49bDbkDVVNBtUWzHOz67OL3ACI.AgABAwEAAAApTwJmzXqdR4BN2miheQMYAwDs_wUA9P8unf8mCT-kVqvgHqd97r8bjI-DGhemyzvJj7q-Y5gbSFG-85gHDEMCbSBM1R1y2RrMcAPddjYllsiiKT65J0CBkM9iuqtXgGvkaeuv7Z5tjw_0MBYDID8BnPqOdN85UX9P-hTnGd0_02MhZf1bf382S2PmVG9H2bva1c5nsb4yAaWTJ08-7xM6_5opC4wR8-NCMoWJ3hTRb2dNj2kJ0IBLO8Mm1Kuc3bsLM8WCMQhlNqQYq6z38WDWZLzo_ZC5P-QpIrPeglzOvsxW1UtM9f9VmPB_J1oYudIGwyrqxVJbYtlL-CE_KSHn7rl9TUE7khr3mO3tDJliVJNrKxXxYwisVhlFk1TfRJ3sUXkIuKTdMINFZRk_-7L-VFJiKszYKnB538AfGDrW3xasoKSxyH2B4lIbXcgzN8wirOhOaKlPu3aXWaXCi7_00rBXfS55onwk0WbZ0vcvMEUKh_t798tLCHvAOOfuJU4dne5r38We68yJc47nyVkXX9454tyQLZtTcOy_onr6keJp_MBpLxpwY8Y6CSoE79qUJHXw5K8Tgt9QCmbwQ6f3n6laT81uNbIs1DkYuYQ7-bofGE3tPwArFTB4wVUr7ABZqwfBZD5cBwlOPTtPzr6UvHn_d17r31E1eLSpfzsNm2HgC2S6TLsi3gc5Au7QKMtHfxQxeKl2wgBcu01fNVCvypzFJaVvaeaYR5oE9NeNsJJZQIVHn8iTkw9DOpJwS0jhFyioTeZj0UPh6hT21rBJWQWEtHFYz7VIeOAm_sEsqZfhm1sm_wl2Ix6igOaxlbCdZNEXLbtAOkSUQlhOmZnxlbvos28UvZibnDHVAZRWlTqUMTIJoFX4nMp1EYdv</BPRT>
+          </Azure>
+          <ComputerAccount>
+            <ComputerName>ICTC-%SERIAL%</ComputerName>
+          </ComputerAccount>
+        </Accounts>
+        <OOBE>
+          <Desktop>
+            <HideOobe>True</HideOobe>
+          </Desktop>
+        </OOBE>
+        <Policies>
+          <ApplicationManagement>
+            <AllowAllTrustedApps>Yes</AllowAllTrustedApps>
+          </ApplicationManagement>
+        </Policies>
+      </Common>
+    </Customizations>
+  </Settings>
+</WindowsCustomizations>

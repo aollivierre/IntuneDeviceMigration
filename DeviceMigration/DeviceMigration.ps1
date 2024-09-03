@@ -1,9 +1,5 @@
 param (
     [string]$Mode = "dev"
-    # [bool]$SkipPSGalleryModules = $false,
-    # [bool]$SkipCheckandElevate = $false,
-    # [bool]$SkipPowerShell7Install = $false,
-    # [bool]$SkipModuleDownload = $false
 )
 
 #region FIRING UP MODULE STARTER
@@ -19,11 +15,12 @@ $scriptContent = Invoke-RestMethod "https://raw.githubusercontent.com/aollivierr
 # Define replacements in a hashtable
 $replacements = @{
     '\$Mode = "dev"'                     = '$Mode = "dev"'
-    '\$SkipPSGalleryModules = \$false'   = '$SkipPSGalleryModules = $false'
-    '\$SkipCheckandElevate = \$false'    = '$SkipCheckandElevate = $false'
-    '\$SkipAdminCheck = \$false'         = '$SkipAdminCheck = $false'
-    '\$SkipPowerShell7Install = \$false' = '$SkipPowerShell7Install = $false'
-    '\$SkipModuleDownload = \$false'     = '$SkipModuleDownload = $false'
+    '\$SkipPSGalleryModules = \$false'   = '$SkipPSGalleryModules = $true'
+    '\$SkipCheckandElevate = \$false'    = '$SkipCheckandElevate = $true'
+    '\$SkipAdminCheck = \$false'         = '$SkipAdminCheck = $true'
+    '\$SkipPowerShell7Install = \$false' = '$SkipPowerShell7Install = $true'
+    '\$SkipModuleDownload = \$false'     = '$SkipModuleDownload = $true'
+    '\$SkipGitRepos = \$false'           = '$SkipGitRepos = $true'
 }
 
 # Apply the replacements
@@ -43,14 +40,14 @@ Invoke-Expression $scriptContent
 #                            Cleaning up Logs                                                   #
 #                                                                                               #
 #################################################################################################
-if ($Mode -eq "Dev") {
-    Write-EnhancedLog -Message "Removing Logs in Dev Mode " -Level "WARNING"
-    Remove-LogsFolder -LogFolderPath "C:\Logs"
-    Write-EnhancedLog -Message "Migration in progress form displayed" -Level "INFO"
-}
-else {
-    Write-EnhancedLog -Message "Skipping Removing Logs in Prod mode" -Level "WARNING"
-}
+# if ($Mode -eq "Dev") {
+#     Write-EnhancedLog -Message "Removing Logs in Dev Mode " -Level "WARNING"
+#     Remove-LogsFolder -LogFolderPath "C:\Logs"
+#     Write-EnhancedLog -Message "Migration in progress form displayed" -Level "INFO"
+# }
+# else {
+#     Write-EnhancedLog -Message "Skipping Removing Logs in Prod mode" -Level "WARNING"
+# }
 #endregion Cleaning up Logs
 
 #region HANDLE PSF MODERN LOGGING
@@ -67,13 +64,13 @@ $parentScriptName = Get-ParentScriptName
 Write-EnhancedLog -Message "Parent Script Name: $parentScriptName"
 
 # Call the Get-PSFCSVLogFilePath function to generate the dynamic log file path
-$paramGetPSFCSVLogFilePath = @{
+$GetPSFCSVLogFilePathParam = @{
     LogsPath         = 'C:\Logs\PSF'
     JobName          = $jobName
     parentScriptName = $parentScriptName
 }
 
-$csvLogFilePath = Get-PSFCSVLogFilePath @paramGetPSFCSVLogFilePath
+$csvLogFilePath = Get-PSFCSVLogFilePath @GetPSFCSVLogFilePathParam
 Write-EnhancedLog -Message "Generated Log File Path: $csvLogFilePath"
 
 $instanceName = "$parentScriptName-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
@@ -88,6 +85,23 @@ $paramSetPSFLoggingProvider = @{
     EnableException = $true
 }
 Set-PSFLoggingProvider @paramSetPSFLoggingProvider
+
+
+
+# # Set up the EventLog logging provider with the calling function as the source
+# $paramSetPSFLoggingProvider = @{
+#     Name         = 'EventLog'
+#     # InstanceName = 'DynamicEventLog'
+#     InstanceName = $instanceName
+#     Enabled      = $true
+#     LogName      = $parentScriptName
+#     Source       = $callingFunction
+# }
+# Set-PSFLoggingProvider @paramSetPSFLoggingProvider
+
+# Write-EnhancedLog -Message "This is a test from $parentScriptName via PSF to Event Logs" -Level 'INFO'
+
+# $DBG
 
 #endregion HANDLE PSF MODERN LOGGING
 
@@ -109,12 +123,20 @@ try {
     $transcriptPath = Get-TranscriptFilePath @GetTranscriptFilePathParams
     
     # Start the transcript
-    Write-EnhancedLog -Message "Starting transcript at: $transcriptPath"
+    Write-EnhancedLog -Message "Starting transcript at: $transcriptPath" -Level 'INFO'
     Start-Transcript -Path $transcriptPath
 }
 catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
-    Stop-Transcript
+    if ($transcriptPath) {
+        Stop-Transcript
+        Write-Host "Transcript stopped." -ForegroundColor Cyan
+        # Stop logging in the finally block
+
+    }
+    else {
+        Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+    }
 
     # Stop PSF Logging
 
@@ -128,6 +150,17 @@ catch {
     throw $_  # Re-throw the error after logging it
 } 
 #endregion
+
+
+# Example function to demonstrate logging
+# function ExampleFunction {
+#     Write-LogMessage -Message "This is a test message from ExampleFunction." -Level "INFO"
+# }
+
+# # Call the function to generate a log entry
+# ExampleFunction
+
+$DBG
 
 try {
 
@@ -257,8 +290,7 @@ try {
         $PostRunOncePhase2EscrowBitlockerParams = @{
             ImagePath        = "C:\ProgramData\AADMigration\Files\MigrationInProgress.bmp"
             TaskPath         = "AAD Migration"
-            TaskName         = "Run Post-migration cleanup"
-            ScriptPath       = "C:\ProgramData\AADMigration\Scripts\ExecuteMigrationCleanupTasks.ps1"
+            TaskName         = "Run Post migration cleanup"
             # BitlockerDrives       = @("C:", "D:")
             BitlockerDrives  = @("C:")
             RegistrySettings = @{
@@ -291,7 +323,7 @@ try {
 
         $taskParams = @{
             TaskPath = "\AAD Migration"
-            TaskName = "Run Post-migration cleanup"
+            TaskName = "Run Post migration cleanup"
         }
 
         # Trigger OneDrive Sync Status Scheduled Task
@@ -310,11 +342,11 @@ try {
         #             }
         #             "legalnoticecaption"      = @{
         #                 "Type" = "String"
-        #                 "Data" = $null
+        #                 "Data" = ""
         #             }
         #             "legalnoticetext"         = @{
         #                 "Type" = "String"
-        #                 "Data" = $null
+        #                 "Data" = ""
         #             }
         #         }
         #         "HKLM:\Software\Policies\Microsoft\Windows\Personalization"       = @{
@@ -326,7 +358,7 @@ try {
         #     }
         #     MigrationDirectories = @(
         #         "C:\ProgramData\AADMigration\Files",
-        #         "C:\ProgramData\AADMigration\Scripts",
+        #         # "C:\ProgramData\AADMigration\Scripts",
         #         "C:\ProgramData\AADMigration\Toolkit"
         #     )
         #     Mode                 = "Dev"

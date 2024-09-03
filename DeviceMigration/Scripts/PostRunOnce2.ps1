@@ -122,8 +122,7 @@ try {
     $PostRunOncePhase2EscrowBitlockerParams = @{
         ImagePath        = "C:\ProgramData\AADMigration\Files\MigrationInProgress.bmp"
         TaskPath         = "AAD Migration"
-        TaskName         = "Run Post-migration cleanup"
-        ScriptPath       = "C:\ProgramData\AADMigration\Scripts\ExecuteMigrationCleanupTasks.ps1"
+        TaskName         = "Run Post migration cleanup"
         # BitlockerDrives       = @("C:", "D:")
         BitlockerDrives  = @("C:")
         RegistrySettings = @{
@@ -209,7 +208,7 @@ finally {
     else {
         Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
     }
-    # Disable-PSFLogging -Name 'logfile' -InstanceName $instanceName
+    # 
 
     
     # Ensure the log is written before proceeding

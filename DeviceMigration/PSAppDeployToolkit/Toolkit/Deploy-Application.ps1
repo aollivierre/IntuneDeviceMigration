@@ -225,41 +225,7 @@ Try {
 		#endregion HANDLE Transript LOGGING
 
 
-		If ($OneDriveKFM) {
 
-			# 	Write-Output "OneDriveKFM flag is set to True. Checking Sync Status before continuing."
-
-			# 	#Check the most recent OD4B Sync status. Write error to event log if not healthy and exit
-			# 	Try {
-
-			# 		$Events = Get-EventLog -LogName Application -EntryType Information -Source 'AAD_Migration_Script'
-
-			# 		$LastEvent = $Events[0].InstanceId
-			# 		$LastEvent
-
-			# 	}
-			# 	Catch {
-
-			# 		Write-Output "No OneDrive Sync status found. Exiting migration utility; will retry on next logon."
-			# 		Exit 3
-
-			# 	}
-
-			# 	If ($LastEvent -eq 1337) {
-
-
-			# 		Write-Output "OneDrive Sync status is considered healthy, continuing."
-
-
-			# 	}
-			# 	Else {
-
-			# 		Write-Output "OneDrive sync status returned a value of $LastEvent. Migration will not launch at this time."
-			# 		Exit 2
-
-			# 	}
-
-		}
 
 		
 
@@ -336,6 +302,8 @@ Try {
 			$params = @{
 				LogFolder      = "logs"
 				StatusFileName = "ODSyncUtilStatus.json"
+				MaxRetries     = 5
+				RetryInterval  = 10
 			}
 			$result = Analyze-OneDriveSyncUtilStatus @params
 		

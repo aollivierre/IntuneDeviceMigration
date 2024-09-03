@@ -189,7 +189,7 @@ finally {
     else {
         Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
     }
-    # Disable-PSFLogging -Name 'logfile' -InstanceName $instanceName
+    # 
 
     
     # Ensure the log is written before proceeding

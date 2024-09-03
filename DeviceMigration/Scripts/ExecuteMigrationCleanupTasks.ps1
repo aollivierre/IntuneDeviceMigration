@@ -87,10 +87,17 @@ try {
 }
 catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
-    Stop-Transcript
+    # Ensure that the transcript is stopped even if an error occurs
+    if ($transcriptPath) {
+        Stop-Transcript
+        Write-Host "Transcript stopped." -ForegroundColor Cyan
+        # Stop logging in the finally block
 
-    # Stop PSF Logging
-    Disable-PSFLogging -Name 'logfile' -InstanceName $instanceName
+    }
+    else {
+        Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+    }
+
     Handle-Error -ErrorRecord $_
     throw $_  # Re-throw the error after logging it
 } 
@@ -116,11 +123,11 @@ try {
                 }
                 "legalnoticecaption"      = @{
                     "Type" = "String"
-                    "Data" = $null
+                    "Data" = ""
                 }
                 "legalnoticetext"         = @{
                     "Type" = "String"
-                    "Data" = $null
+                    "Data" = ""
                 }
             }
             "HKLM:\Software\Policies\Microsoft\Windows\Personalization"       = @{
@@ -132,7 +139,7 @@ try {
         }
         MigrationDirectories = @(
             "C:\ProgramData\AADMigration\Files",
-            "C:\ProgramData\AADMigration\Scripts",
+            # "C:\ProgramData\AADMigration\Scripts",
             "C:\ProgramData\AADMigration\Toolkit"
         )
         Mode                 = "Dev"
@@ -166,7 +173,16 @@ try {
 }
 catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
-    Stop-Transcript
+    # Ensure that the transcript is stopped even if an error occurs
+    if ($transcriptPath) {
+        Stop-Transcript
+        Write-Host "Transcript stopped." -ForegroundColor Cyan
+        # Stop logging in the finally block
+
+    }
+    else {
+        Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+    }
 
     # Stop PSF Logging
 
@@ -190,8 +206,6 @@ finally {
     else {
         Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
     }
-    # Disable-PSFLogging -Name 'logfile' -InstanceName $instanceName
-
     
     # Ensure the log is written before proceeding
     Wait-PSFMessage
