@@ -135,6 +135,19 @@ function Execute-MigrationTasks {
 
                 Create-PPKG @ppkgParams
 
+
+                # Example usage of the Check-PackageAccount function
+                try {
+                    # Define the package GUID and domain
+                    $packageGuid = "75cc34e6-141c-4577-8792-c238a4293408"
+                    $domain = "ictc-ctic.ca"
+
+                    # Invoke the Check-PackageAccount function
+                    Check-PackageAccount -PackageGuid $packageGuid -Domain $domain
+                }
+                catch {
+                    Write-Host "An error occurred during the account check: $($_.Exception.Message)" -ForegroundColor Red
+                }
                 
                 
             }
