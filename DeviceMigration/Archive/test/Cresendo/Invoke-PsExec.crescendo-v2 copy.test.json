@@ -1,0 +1,41 @@
+{
+  "$schema": "https://aka.ms/PowerShell/Crescendo/Schemas/2022-06#",
+  "Commands": [
+    {
+      "Verb": "Invoke",
+      "Noun": "PsExec",
+      "OriginalName": "PsExec64.exe",
+      "Platform": [
+        "Windows"
+      ],
+      "Description": "Execute the current PowerShell script as SYSTEM using PsExec.",
+      "Parameters": [
+        {
+          "Name": "UsePowerShell5",
+          "Description": "Use PowerShell 5 if true, otherwise use the default PowerShell version.",
+          "ParameterType": "bool",
+          "Mandatory": false,
+          "Position": 1,
+          "ParameterSetName": [
+            "Default"
+          ]
+        }
+      ],
+      "OutputHandlers": [
+        {
+          "ParameterSetName": "Default",
+          "HandlerType": "Inline",
+          "StreamOutput": true,
+          "Handler": "
+              $pwshPath = if ($UsePowerShell5) {
+                  'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'
+              } else {
+                  (Get-Command pwsh).Source
+              }
+              $scriptPath = $MyInvocation.MyCommand.Path
+              & 'PsExec64.exe' -s -i $pwshPath -ExecutionPolicy Bypass -NoExit -File `"$scriptPath`""
+        }
+      ]
+    }
+  ]
+}

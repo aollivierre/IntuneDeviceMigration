@@ -1,0 +1,60 @@
+{
+  "$schema": "https://aka.ms/PowerShell/Crescendo/Schemas/2022-06#",
+  "Commands": [
+    {
+      "Verb": "Invoke",
+      "Noun": "AsSystem",
+      "OriginalName": "PsExec64.exe",
+      "Platform": ["Windows"],
+      "Description": "Execute PowerShell scripts as SYSTEM using PsExec.",
+      "Parameters": [
+        {
+          "Name": "PsExec64Path",
+          "Description": "Path to PsExec64.exe.",
+          "ParameterType": "string",
+          "Mandatory": true,
+          "Position": 0,
+          "ParameterSetName": ["Default"]
+        },
+        {
+          "Name": "ScriptPathAsSYSTEM",
+          "Description": "Path to the PowerShell script to run as SYSTEM.",
+          "ParameterType": "string",
+          "Mandatory": true,
+          "Position": 1,
+          "ParameterSetName": ["Default"]
+        },
+        {
+          "Name": "TargetFolder",
+          "Description": "Target folder to store necessary files.",
+          "ParameterType": "string",
+          "Mandatory": true,
+          "Position": 2,
+          "ParameterSetName": ["Default"]
+        },
+        {
+          "Name": "UsePowerShell5",
+          "Description": "Use PowerShell 5 if true, otherwise use the default PowerShell version.",
+          "ParameterType": "bool",
+          "Mandatory": false,
+          "Position": 3,
+          "ParameterSetName": ["Default"]
+        }
+      ],
+      "OutputHandlers": [
+        {
+          "ParameterSetName": "Default",
+          "HandlerType": "Inline",
+          "StreamOutput": true,
+          "Handler": "& '$PsExec64Path' -accepteula -s -i `"$pwshPath` -NoExit -ExecutionPolicy Bypass -File `"$ScriptPathAsSYSTEM`"
+        }
+      ],
+      "Examples": [
+        {
+          "Command": "Invoke-AsSystem -PsExec64Path 'C:\\Tools\\PsExec64.exe' -ScriptPathAsSYSTEM 'C:\\Scripts\\MyScript.ps1' -TargetFolder 'C:\\ProgramData\\SystemScripts' -UsePowerShell5 $true",
+          "Description": "Run a PowerShell script as SYSTEM using PsExec64 and PowerShell 5."
+        }
+      ]
+    }
+  ]
+}

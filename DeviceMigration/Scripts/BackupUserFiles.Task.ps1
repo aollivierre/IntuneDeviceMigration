@@ -16,6 +16,7 @@ $replacements = @{
     '\$SkipAdminCheck = \$false'         = '$SkipAdminCheck = $True'
     '\$SkipPowerShell7Install = \$false' = '$SkipPowerShell7Install = $True'
     '\$SkipModuleDownload = \$false'     = '$SkipModuleDownload = $True'
+    '\$SkipGitrepos = \$false'           = '$SkipGitrepos = $true'
 }
 
 # Apply the replacements
@@ -62,6 +63,7 @@ $paramSetPSFLoggingProvider = @{
     EnableException = $true
 }
 Set-PSFLoggingProvider @paramSetPSFLoggingProvider
+
 #endregion HANDLE PSF MODERN LOGGING
 
 
@@ -91,6 +93,7 @@ catch {
         Stop-Transcript
         Write-Host "Transcript stopped." -ForegroundColor Cyan
         # Stop logging in the finally block
+
     }
     else {
         Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
@@ -116,21 +119,47 @@ try {
     #                                    Script Logic                                               #
     #                                                                                               #
     #################################################################################################
-    # Example usage
 
-    #The following is mainly responsible about enrolling the device in the tenant's Entra ID via a PPKG
-    $PostRunOncePhase1EntraJoinParams = @{
-        MigrationConfigPath = "C:\ProgramData\AADMigration\MigrationConfig.psd1"
-        ImagePath           = "C:\ProgramData\AADMigration\Files\MigrationInProgress.bmp"
-        RunOnceScriptPath   = "C:\ProgramData\AADMigration\Scripts\PostRunOnce2.ps1"
-        RunOnceKey          = "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
-        PowershellPath      = "C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe"
-        ExecutionPolicy     = "Unrestricted"
-        RunOnceName         = "NextRun"
-        Mode                = "Dev"
+    
+    # Example usage for Chrome bookmarks
+    $BackupChromeBookmarksToOneDriveParams = @{
+        SourcePath         = "$env:USERPROFILE\AppData\Local\Google\Chrome\User Data\Default"
+        BackupFolderName   = "ChromeBackup"
+        Exclude            = ".git"
+        RetryCount         = 2
+        WaitTime           = 5
+        RequiredSpaceGB    = 10
+        OneDriveBackupPath = "$env:OneDrive\Backups"
+        Scriptbasepath     = "$PSScriptroot"
     }
-    PostRunOnce-Phase1EntraJoin @PostRunOncePhase1EntraJoinParams
-    #endregion
+    Backup-UserFilesToOneDrive @BackupChromeBookmarksToOneDriveParams
+
+    # Example usage for Outlook signatures
+    $BackupOutlookSignaturesToOneDrive = @{
+        SourcePath         = "$env:USERPROFILE\AppData\Roaming\Microsoft\Signatures"
+        BackupFolderName   = "OutlookSignatures"
+        Exclude            = ".git"
+        RetryCount         = 2
+        WaitTime           = 5
+        RequiredSpaceGB    = 10
+        OneDriveBackupPath = "$env:OneDrive\Backups"
+        Scriptbasepath     = "$PSScriptroot"
+    }
+    Backup-UserFilesToOneDrive @BackupOutlookSignaturesToOneDrive
+
+    # Example usage for Downloads folder
+    $BackupDownloadsToOneDriveParams = @{
+        SourcePath         = "$env:USERPROFILE\Downloads"
+        BackupFolderName   = "DownloadsBackup"
+        Exclude            = ".git"
+        RetryCount         = 2
+        WaitTime           = 5
+        RequiredSpaceGB    = 10
+        OneDriveBackupPath = "$env:OneDrive\Backups"
+        Scriptbasepath     = "$PSScriptroot"
+    }
+    Backup-UserFilesToOneDrive @BackupDownloadsToOneDriveParams
+    #endregion Script Logic
     
     #region HANDLE PSF LOGGING
     #################################################################################################
@@ -149,8 +178,8 @@ try {
     #     PSFPath                   = "C:\Logs\PSF"
     #     ParentScriptName          = $parentScriptName
     #     JobName                   = $JobName
-    #     SkipSYSTEMLogCopy         = $True
-    #     SkipSYSTEMLogRemoval      = $True
+    #     SkipSYSTEMLogCopy         = $true
+    #     SkipSYSTEMLogRemoval      = $true
     # }
 
     # Handle-PSFLogging @HandlePSFLoggingParams
@@ -162,6 +191,7 @@ catch {
         Stop-Transcript
         Write-Host "Transcript stopped." -ForegroundColor Cyan
         # Stop logging in the finally block
+
     }
     else {
         Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red

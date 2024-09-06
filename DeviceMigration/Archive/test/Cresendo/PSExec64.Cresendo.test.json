@@ -1,0 +1,42 @@
+{
+    "$schema": "https://aka.ms/PowerShell/Crescendo/Schemas/2022-06",
+    "Commands": [
+      {
+        "Verb": "Invoke",
+        "Noun": "PsExec",
+        "OriginalName": "PsExec64.exe",
+        "Description": "Execute commands using PsExec",
+        "Parameters": [
+          {
+            "Name": "ComputerName",
+            "ParameterType": "string",
+            "Position": 1,
+            "ParameterSetName": ["Default"],
+            "Description": "The target computer."
+          },
+          {
+            "Name": "Command",
+            "ParameterType": "string",
+            "Position": 2,
+            "ParameterSetName": ["Default"],
+            "Description": "The command to execute (e.g., cmd.exe)."
+          }
+        ],
+        "OutputHandlers": [
+          {
+            "ParameterSetName": "Default",
+            "HandlerType": "Inline",
+            "StreamOutput": true,
+            "Handler": "$input | Out-String"
+          }
+        ],
+        "Examples": [
+          {
+            "Command": "Invoke-PsExec -ComputerName 'localhost' -Command 'cmd.exe'",
+            "Description": "Run PsExec to execute cmd.exe on the localhost."
+          }
+        ]
+      }
+    ]
+  }
+  

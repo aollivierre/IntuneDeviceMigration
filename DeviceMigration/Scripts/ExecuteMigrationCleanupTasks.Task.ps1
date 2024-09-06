@@ -16,6 +16,7 @@ $replacements = @{
     '\$SkipAdminCheck = \$false'         = '$SkipAdminCheck = $True'
     '\$SkipPowerShell7Install = \$false' = '$SkipPowerShell7Install = $True'
     '\$SkipModuleDownload = \$false'     = '$SkipModuleDownload = $True'
+    '\$SkipGitrepos = \$false'           = '$SkipGitrepos = $true'
 }
 
 # Apply the replacements
@@ -87,19 +88,20 @@ try {
 }
 catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
-    Stop-Transcript
+    # Ensure that the transcript is stopped even if an error occurs
+    if ($transcriptPath) {
+        Stop-Transcript
+        Write-Host "Transcript stopped." -ForegroundColor Cyan
+        # Stop logging in the finally block
 
-    # Stop PSF Logging
-
-    # Ensure the log is written before proceeding
-    Wait-PSFMessage
-
-    # Stop logging in the finally block by disabling the provider
-    Set-PSFLoggingProvider -Name 'logfile' -InstanceName $instanceName -Enabled $false
+    }
+    else {
+        Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+    }
 
     Handle-Error -ErrorRecord $_
     throw $_  # Re-throw the error after logging it
-}
+} 
 #endregion HANDLE Transript LOGGING
 
 try {
@@ -110,12 +112,40 @@ try {
     #                                                                                               #
     #################################################################################################
     # Example usage
-    $CheckODSyncUtilStatusParams = @{
-        ScriptPath     = "C:\ProgramData\AADMigration\Files\ODSyncUtil"
-        LogFolderName  = "logs"
-        StatusFileName = "ODSyncUtilStatus.json"
+
+    # performs cleanup tasks after migration, including removing temporary user accounts, disabling local user accounts, removing scheduled tasks, clearing OneDrive cache, and setting registry values for disabling legal notices
+    $ExecuteMigrationCleanupTasksParams = @{
+        TempUser             = "MigrationInProgress"
+        RegistrySettings     = @{
+            "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" = @{
+                "dontdisplaylastusername" = @{
+                    "Type" = "DWORD"
+                    "Data" = "0"
+                }
+                "legalnoticecaption"      = @{
+                    "Type" = "String"
+                    "Data" = ""
+                }
+                "legalnoticetext"         = @{
+                    "Type" = "String"
+                    "Data" = ""
+                }
+            }
+            "HKLM:\Software\Policies\Microsoft\Windows\Personalization"       = @{
+                "NoLockScreen" = @{
+                    "Type" = "DWORD"
+                    "Data" = "0"
+                }
+            }
+        }
+        MigrationDirectories = @(
+            "C:\ProgramData\AADMigration\Files",
+            # "C:\ProgramData\AADMigration\Scripts",
+            "C:\ProgramData\AADMigration\Toolkit"
+        )
+        Mode                 = "Dev"
     }
-    Check-ODSyncUtilStatus @CheckODSyncUtilStatusParams
+    Execute-MigrationCleanupTasks @ExecuteMigrationCleanupTasksParams
     #endregion
     
     #region HANDLE PSF LOGGING
@@ -144,7 +174,16 @@ try {
 }
 catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
-    Stop-Transcript
+    # Ensure that the transcript is stopped even if an error occurs
+    if ($transcriptPath) {
+        Stop-Transcript
+        Write-Host "Transcript stopped." -ForegroundColor Cyan
+        # Stop logging in the finally block
+
+    }
+    else {
+        Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+    }
 
     # Stop PSF Logging
 
@@ -168,8 +207,6 @@ finally {
     else {
         Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
     }
-    # 
-
     
     # Ensure the log is written before proceeding
     Wait-PSFMessage
@@ -178,3 +215,4 @@ finally {
     Set-PSFLoggingProvider -Name 'logfile' -InstanceName $instanceName -Enabled $false
 
 }
+

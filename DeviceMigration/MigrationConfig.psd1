@@ -12,5 +12,7 @@
 	# DomainLeaveUser = ""
 	# DomainLeavePass = ""
 	# ProvisioningPack = "AAD Join.ppkg"
-	ProvisioningPack = "C:\ProgramData\AADMigration\Files\ICTC_EJ_Bulk_Enrollment_v4\ICTC_EJ_Bulk_Enrollment_v5.ppkg"
+	# ProvisioningPack = "C:\ProgramData\AADMigration\Files\ICTC_EJ_Bulk_Enrollment_v4\ICTC_EJ_Bulk_Enrollment_v5.ppkg"
+	ProvisioningPack = "C:\ProgramData\AADMigration\Files\ICTC_Project_2_Aug_29_2024\ICTC_Project_2.ppkg"
+	ProvisioningPackname = "ICTC_Project_2.ppkg"
 }

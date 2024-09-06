@@ -281,7 +281,7 @@ try {
             RunOnceName         = "NextRun"
             Mode                = "Dev"
         }
-        PostRunOnce-Phase1EntraJoin @PostRunOncePhase1EntraJoinParams
+        # PostRunOnce-Phase1EntraJoin @PostRunOncePhase1EntraJoinParams
 
 
 
@@ -317,7 +317,7 @@ try {
             }
             Mode             = "Dev"
         }
-        PostRunOnce-Phase2EscrowBitlocker @PostRunOncePhase2EscrowBitlockerParams
+        # PostRunOnce-Phase2EscrowBitlocker @PostRunOncePhase2EscrowBitlockerParams
 
 
 
@@ -327,7 +327,7 @@ try {
         }
 
         # Trigger OneDrive Sync Status Scheduled Task
-        Trigger-ScheduledTask @taskParams
+        # Trigger-ScheduledTask @taskParams
 
 
         # Post Run 3
@@ -369,7 +369,7 @@ try {
         Write-EnhancedLog -Message "All Post Run Once and Post Run Scheduled Tasks in Dev Mode completed" -Level "INFO"
     }
     else {
-        Write-EnhancedLog -Message "Skipping Displaying Migration in Progress form in Dev mode" -Level "WARNING"
+        Write-EnhancedLog -Message "Skipping Running all Post Run Once and Post Run Scheduled Tasks in prod Mode" -Level "WARNING"
     }
 
 

@@ -16,6 +16,7 @@ $replacements = @{
     '\$SkipAdminCheck = \$false'         = '$SkipAdminCheck = $True'
     '\$SkipPowerShell7Install = \$false' = '$SkipPowerShell7Install = $True'
     '\$SkipModuleDownload = \$false'     = '$SkipModuleDownload = $True'
+    '\$SkipGitrepos = \$false'           = '$SkipGitrepos = $true'
 }
 
 # Apply the replacements
@@ -62,6 +63,7 @@ $paramSetPSFLoggingProvider = @{
     EnableException = $true
 }
 Set-PSFLoggingProvider @paramSetPSFLoggingProvider
+
 #endregion HANDLE PSF MODERN LOGGING
 
 
@@ -91,6 +93,7 @@ catch {
         Stop-Transcript
         Write-Host "Transcript stopped." -ForegroundColor Cyan
         # Stop logging in the finally block
+
     }
     else {
         Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
@@ -116,40 +119,8 @@ try {
     #                                    Script Logic                                               #
     #                                                                                               #
     #################################################################################################
-    # Example usage
 
-    #blocks user input, displays a migration in progress form, creates a scheduled task for post-migration cleanup, escrows the BitLocker recovery key, sets various registry values for legal noctices, and optionally restarts the computer.
-    $PostRunOncePhase2EscrowBitlockerParams = @{
-        ImagePath        = "C:\ProgramData\AADMigration\Files\MigrationInProgress.bmp"
-        TaskPath         = "AAD Migration"
-        TaskName         = "Run Post migration cleanup"
-        # BitlockerDrives       = @("C:", "D:")
-        BitlockerDrives  = @("C:")
-        RegistrySettings = @{
-            "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"     = @{
-                "AutoAdminLogon" = @{
-                    "Type" = "DWORD"
-                    "Data" = "0"
-                }
-            }
-            "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" = @{
-                "dontdisplaylastusername" = @{
-                    "Type" = "DWORD"
-                    "Data" = "1"
-                }
-                "legalnoticecaption"      = @{
-                    "Type" = "String"
-                    "Data" = "Migration Completed"
-                }
-                "legalnoticetext"         = @{
-                    "Type" = "String"
-                    "Data" = "This PC has been migrated to Azure Active Directory. Please log in to Windows using your email address and password."
-                }
-            }
-        }
-        Mode             = "Dev"
-    }
-    PostRunOnce-Phase2EscrowBitlocker @PostRunOncePhase2EscrowBitlockerParams
+    Clear-OneDriveCache
     #endregion Script Logic
     
     #region HANDLE PSF LOGGING
@@ -169,8 +140,8 @@ try {
     #     PSFPath                   = "C:\Logs\PSF"
     #     ParentScriptName          = $parentScriptName
     #     JobName                   = $JobName
-    #     SkipSYSTEMLogCopy         = $True
-    #     SkipSYSTEMLogRemoval      = $True
+    #     SkipSYSTEMLogCopy         = $true
+    #     SkipSYSTEMLogRemoval      = $true
     # }
 
     # Handle-PSFLogging @HandlePSFLoggingParams
@@ -182,6 +153,7 @@ catch {
         Stop-Transcript
         Write-Host "Transcript stopped." -ForegroundColor Cyan
         # Stop logging in the finally block
+
     }
     else {
         Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
@@ -204,6 +176,7 @@ finally {
         Stop-Transcript
         Write-Host "Transcript stopped." -ForegroundColor Cyan
         # Stop logging in the finally block
+
     }
     else {
         Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red

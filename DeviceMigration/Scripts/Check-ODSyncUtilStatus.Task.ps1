@@ -16,6 +16,7 @@ $replacements = @{
     '\$SkipAdminCheck = \$false'         = '$SkipAdminCheck = $True'
     '\$SkipPowerShell7Install = \$false' = '$SkipPowerShell7Install = $True'
     '\$SkipModuleDownload = \$false'     = '$SkipModuleDownload = $True'
+    '\$SkipGitrepos = \$false'           = '$SkipGitrepos = $true'
 }
 
 # Apply the replacements
@@ -62,7 +63,6 @@ $paramSetPSFLoggingProvider = @{
     EnableException = $true
 }
 Set-PSFLoggingProvider @paramSetPSFLoggingProvider
-
 #endregion HANDLE PSF MODERN LOGGING
 
 
@@ -118,47 +118,14 @@ try {
     #                                    Script Logic                                               #
     #                                                                                               #
     #################################################################################################
-
-    
-    # Example usage for Chrome bookmarks
-    $BackupChromeBookmarksToOneDriveParams = @{
-        SourcePath         = "$env:USERPROFILE\AppData\Local\Google\Chrome\User Data\Default"
-        BackupFolderName   = "ChromeBackup"
-        Exclude            = ".git"
-        RetryCount         = 2
-        WaitTime           = 5
-        RequiredSpaceGB    = 10
-        OneDriveBackupPath = "$env:OneDrive\Backups"
-        Scriptbasepath     = "$PSScriptroot"
+    # Example usage
+    $CheckODSyncUtilStatusParams = @{
+        ScriptPath     = "C:\ProgramData\AADMigration\Files\ODSyncUtil"
+        LogFolderName  = "logs"
+        StatusFileName = "ODSyncUtilStatus.json"
     }
-    Backup-UserFilesToOneDrive @BackupChromeBookmarksToOneDriveParams
-
-    # Example usage for Outlook signatures
-    $BackupOutlookSignaturesToOneDrive = @{
-        SourcePath         = "$env:USERPROFILE\AppData\Roaming\Microsoft\Signatures"
-        BackupFolderName   = "OutlookSignatures"
-        Exclude            = ".git"
-        RetryCount         = 2
-        WaitTime           = 5
-        RequiredSpaceGB    = 10
-        OneDriveBackupPath = "$env:OneDrive\Backups"
-        Scriptbasepath     = "$PSScriptroot"
-    }
-    Backup-UserFilesToOneDrive @BackupOutlookSignaturesToOneDrive
-
-    # Example usage for Downloads folder
-    $BackupDownloadsToOneDriveParams = @{
-        SourcePath         = "$env:USERPROFILE\Downloads"
-        BackupFolderName   = "DownloadsBackup"
-        Exclude            = ".git"
-        RetryCount         = 2
-        WaitTime           = 5
-        RequiredSpaceGB    = 10
-        OneDriveBackupPath = "$env:OneDrive\Backups"
-        Scriptbasepath     = "$PSScriptroot"
-    }
-    Backup-UserFilesToOneDrive @BackupDownloadsToOneDriveParams
-    #endregion Script Logic
+    Check-ODSyncUtilStatus @CheckODSyncUtilStatusParams
+    #endregion
     
     #region HANDLE PSF LOGGING
     #################################################################################################
@@ -177,8 +144,8 @@ try {
     #     PSFPath                   = "C:\Logs\PSF"
     #     ParentScriptName          = $parentScriptName
     #     JobName                   = $JobName
-    #     SkipSYSTEMLogCopy         = $true
-    #     SkipSYSTEMLogRemoval      = $true
+    #     SkipSYSTEMLogCopy         = $True
+    #     SkipSYSTEMLogRemoval      = $True
     # }
 
     # Handle-PSFLogging @HandlePSFLoggingParams

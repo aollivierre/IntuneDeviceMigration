@@ -11,11 +11,12 @@ $scriptContent = Invoke-RestMethod "https://raw.githubusercontent.com/aollivierr
 # Define replacements in a hashtable
 $replacements = @{
     '\$Mode = "dev"'                     = '$Mode = "dev"'
-    '\$SkipPSGalleryModules = \$false'   = '$SkipPSGalleryModules = $True'
-    '\$SkipCheckandElevate = \$false'    = '$SkipCheckandElevate = $True'
-    '\$SkipAdminCheck = \$false'         = '$SkipAdminCheck = $True'
-    '\$SkipPowerShell7Install = \$false' = '$SkipPowerShell7Install = $True'
-    '\$SkipModuleDownload = \$false'     = '$SkipModuleDownload = $True'
+    '\$SkipPSGalleryModules = \$false'   = '$SkipPSGalleryModules = $true'
+    '\$SkipCheckandElevate = \$false'    = '$SkipCheckandElevate = $true'
+    '\$SkipAdminCheck = \$false'         = '$SkipAdminCheck = $true'
+    '\$SkipPowerShell7Install = \$false' = '$SkipPowerShell7Install = $true'
+    '\$SkipModuleDownload = \$false'     = '$SkipModuleDownload = $true'
+    '\$SkipGitrepos = \$false'           = '$SkipGitrepos = $true'
 }
 
 # Apply the replacements
@@ -88,7 +89,15 @@ try {
 }
 catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
-    Stop-Transcript
+    if ($transcriptPath) {
+        Stop-Transcript
+        Write-Host "Transcript stopped." -ForegroundColor Cyan
+        # Stop logging in the finally block
+
+    }
+    else {
+        Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+    }
 
     # Stop PSF Logging
 
@@ -124,16 +133,39 @@ try {
 
     Ensure-RunningAsSystem @ensureRunningAsSystemParams
 
+
+    $ValidatePSADTFilesParams = @{
+        ScriptRoot = $PSScriptRoot
+    }
+    Validate-PSADTFiles @ValidatePSADTFilesParams
+
+    # Wait-Debugger
+    
+
     $pwshPath = Get-PowerShellPath
 
     # Define the path to the deploy-application.ps1 script
     $scriptPath = "$PSScriptRoot\deploy-application.ps1"
 
-    # Define the arguments for the script
-    $arguments = '-NoExit -ExecutionPolicy Bypass -File "' + $scriptPath + '" -DeploymentType "Install" -DeployMode "Interactive"'
+    # Ensure the script path is wrapped in quotes if it contains spaces
+    $scriptPath = "`"$scriptPath`""
 
-    # Start the process without hiding the window
+    # Define the arguments for the script in an array
+    $arguments = @(
+        '-NoExit'
+        '-ExecutionPolicy'
+        'Bypass'
+        '-File'
+        $scriptPath  # Path is already enclosed in quotes
+        '-DeploymentType'
+        'Install'
+        '-DeployMode'
+        'Interactive'
+    )
+
+    # Start the process with the arguments passed as an array
     Start-Process -FilePath $pwshPath -ArgumentList $arguments -Wait
+
     
     #endregion Script Logic
     
@@ -163,7 +195,15 @@ try {
 }
 catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
-    Stop-Transcript
+    if ($transcriptPath) {
+        Stop-Transcript
+        Write-Host "Transcript stopped." -ForegroundColor Cyan
+        # Stop logging in the finally block
+
+    }
+    else {
+        Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+    }
 
     # Stop PSF Logging
 

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://aka.ms/PowerShell/Crescendo/Schemas/2022-06#",
+  "Commands": [
+    {
+      "Verb": "Invoke",
+      "Noun": "PsExec",
+      "OriginalName": "PsExec64.exe",
+      "Platform": [
+        "Windows"
+      ],
+      "Description": "Execute commands as SYSTEM using PsExec",
+      "Parameters": [
+        {
+          "Name": "Command",
+          "Description": "The command to execute.",
+          "ParameterType": "string",
+          "Position": 1,
+          "ParameterSetName": [
+            "Default"
+          ]
+        },
+        {
+          "Name": "Args",
+          "Description": "Arguments for the command.",
+          "ParameterType": "string",
+          "Position": 2,
+          "ParameterSetName": [
+            "Default"
+          ]
+        }
+      ],
+      "OutputHandlers": [
+        {
+          "ParameterSetName": "Default",
+          "HandlerType": "Inline",
+          "StreamOutput": true,
+          "Handler": "& 'PsExec64.exe' -accepteula -i -s powershell.exe -NoExit -ExecutionPolicy Bypass -File $Args"
+        }
+      ]
+    }
+  ]
+}
