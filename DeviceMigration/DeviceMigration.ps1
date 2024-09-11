@@ -1,6 +1,34 @@
-param (
-    [string]$Mode = "dev"
-)
+# param (
+#     [string]$Mode = "dev"
+# )
+
+# Set environment variable globally for all users
+[System.Environment]::SetEnvironmentVariable('EnvironmentMode', 'dev', 'Machine')
+
+# Alternatively, use this PowerShell method (same effect)
+# Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'EnvironmentMode' -Value 'dev'
+
+
+# Retrieve the environment mode (default to 'prod' if not set)
+$mode = $env:EnvironmentMode
+
+# Toggle based on the environment mode
+switch ($mode) {
+    'dev' {
+        Write-Host "Running in development mode" -ForegroundColor Yellow
+        # Your development logic here
+    }
+    'prod' {
+        Write-Host "Running in production mode" -ForegroundColor Green
+        # Your production logic here
+    }
+    default {
+        Write-Host "Unknown mode. Defaulting to production." -ForegroundColor Red
+        # Default to production
+    }
+}
+
+# Wait-Debugger
 
 #region FIRING UP MODULE STARTER
 #################################################################################################
@@ -9,27 +37,18 @@ param (
 #                                                                                               #
 #################################################################################################
 
-# Fetch the script content
-$scriptContent = Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Module-Starter.ps1"
-
-# Define replacements in a hashtable
-$replacements = @{
-    '\$Mode = "dev"'                     = '$Mode = "dev"'
-    '\$SkipPSGalleryModules = \$false'   = '$SkipPSGalleryModules = $true'
-    '\$SkipCheckandElevate = \$false'    = '$SkipCheckandElevate = $true'
-    '\$SkipAdminCheck = \$false'         = '$SkipAdminCheck = $true'
-    '\$SkipPowerShell7Install = \$false' = '$SkipPowerShell7Install = $true'
-    '\$SkipModuleDownload = \$false'     = '$SkipModuleDownload = $true'
-    '\$SkipGitRepos = \$false'           = '$SkipGitRepos = $true'
+# Define a hashtable for splatting
+$moduleStarterParams = @{
+    Mode                   = $mode
+    SkipPSGalleryModules   = $true
+    SkipCheckandElevate    = $true
+    SkipPowerShell7Install = $true
+    SkipEnhancedModules    = $true
+    SkipGitRepos           = $true
 }
 
-# Apply the replacements
-foreach ($pattern in $replacements.Keys) {
-    $scriptContent = $scriptContent -replace $pattern, $replacements[$pattern]
-}
-
-# Execute the script
-Invoke-Expression $scriptContent
+# Call the function using the splat
+Invoke-ModuleStarter @moduleStarterParams
 
 #endregion FIRING UP MODULE STARTER
 
@@ -149,16 +168,7 @@ catch {
     Handle-Error -ErrorRecord $_
     throw $_  # Re-throw the error after logging it
 } 
-#endregion
-
-
-# Example function to demonstrate logging
-# function ExampleFunction {
-#     Write-LogMessage -Message "This is a test message from ExampleFunction." -Level "INFO"
-# }
-
-# # Call the function to generate a log entry
-# ExampleFunction
+#endregion HANDLE Transript LOGGING
 
 $DBG
 

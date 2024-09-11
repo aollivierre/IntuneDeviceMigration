@@ -55,10 +55,10 @@ if ($dsregStatus.IsMDMEnrolled) {
 }
 
 # Exit code based on Azure AD and MDM status
-if ($dsregStatus.IsAzureADJoined -and $dsregStatus.IsMDMEnrolled) {
+if ($dsregStatus.IsAzureADJoined -and -not $dsregStatus.IsHybridJoined -and $dsregStatus.IsMDMEnrolled) {
     Write-Output "Device is Azure AD Joined and Intune Enrolled. No migration needed."
     exit 0 # Do not migrate: Device is Azure AD Joined and Intune Enrolled
 } else {
-    # Migrate: All other cases where the device is not 100% Azure AD joined
+    # Migrate: All other cases where the device is not 100% Azure AD joined or is hybrid/on-prem joined
     exit 1
 }

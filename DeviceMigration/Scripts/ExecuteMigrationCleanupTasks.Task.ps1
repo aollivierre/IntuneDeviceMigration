@@ -1,3 +1,5 @@
+$mode = $env:EnvironmentMode
+
 #region FIRING UP MODULE STARTER
 #################################################################################################
 #                                                                                               #
@@ -5,29 +7,20 @@
 #                                                                                               #
 #################################################################################################
 
-# Fetch the script content
-$scriptContent = Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Module-Starter.ps1"
-
-# Define replacements in a hashtable
-$replacements = @{
-    '\$Mode = "dev"'                     = '$Mode = "dev"'
-    '\$SkipPSGalleryModules = \$false'   = '$SkipPSGalleryModules = $True'
-    '\$SkipCheckandElevate = \$false'    = '$SkipCheckandElevate = $True'
-    '\$SkipAdminCheck = \$false'         = '$SkipAdminCheck = $True'
-    '\$SkipPowerShell7Install = \$false' = '$SkipPowerShell7Install = $True'
-    '\$SkipModuleDownload = \$false'     = '$SkipModuleDownload = $True'
-    '\$SkipGitrepos = \$false'           = '$SkipGitrepos = $true'
+# Define a hashtable for splatting
+$moduleStarterParams = @{
+    Mode                   = $mode
+    SkipPSGalleryModules   = $true
+    SkipCheckandElevate    = $true
+    SkipPowerShell7Install = $true
+    SkipEnhancedModules    = $true
+    SkipGitRepos           = $true
 }
 
-# Apply the replacements
-foreach ($pattern in $replacements.Keys) {
-    $scriptContent = $scriptContent -replace $pattern, $replacements[$pattern]
-}
+# Call the function using the splat
+Invoke-ModuleStarter @moduleStarterParams
 
-# Execute the script
-Invoke-Expression $scriptContent
-
-#endregion
+#endregion FIRING UP MODULE STARTER
 
 #region HANDLE PSF MODERN LOGGING
 #################################################################################################

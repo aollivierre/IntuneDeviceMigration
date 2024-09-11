@@ -196,36 +196,29 @@ Try {
 
 		Show-InstallationProgress -Status 'FIRING UP MODULE STARTER'
 
+		$mode = $env:EnvironmentMode
+
 		#region FIRING UP MODULE STARTER
 		#################################################################################################
 		#                                                                                               #
 		#                                 FIRING UP MODULE STARTER                                      #
 		#                                                                                               #
 		#################################################################################################
-
-		# Fetch the script content
-		$scriptContent = Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Module-Starter.ps1"
-
-		# Define replacements in a hashtable
-		$replacements = @{
-			'\$Mode = "dev"'                     = '$Mode = "dev"'
-			'\$SkipPSGalleryModules = \$false'   = '$SkipPSGalleryModules = $true'
-			'\$SkipCheckandElevate = \$false'    = '$SkipCheckandElevate = $true'
-			'\$SkipAdminCheck = \$false'         = '$SkipAdminCheck = $true'
-			'\$SkipPowerShell7Install = \$false' = '$SkipPowerShell7Install = $true'
-			'\$SkipModuleDownload = \$false'     = '$SkipModuleDownload = $true'
-			'\$SkipGitrepos = \$false'           = '$SkipGitrepos = $true'
+		
+		# Define a hashtable for splatting
+		$moduleStarterParams = @{
+			Mode                   = $mode
+			SkipPSGalleryModules   = $true
+			SkipCheckandElevate    = $true
+			SkipPowerShell7Install = $true
+			SkipEnhancedModules    = $true
+			SkipGitRepos           = $true
 		}
-
-		# Apply the replacements
-		foreach ($pattern in $replacements.Keys) {
-			$scriptContent = $scriptContent -replace $pattern, $replacements[$pattern]
-		}
-
-		# Execute the script
-		Invoke-Expression $scriptContent
-
-		#endregion
+		
+		# Call the function using the splat
+		Invoke-ModuleStarter @moduleStarterParams
+		
+		#endregion FIRING UP MODULE STARTER
 
 
 		Show-InstallationProgress -Status 'HANDLING PSF MODERN LOGGING'
@@ -498,8 +491,8 @@ Try {
 		Show-InstallationProgress -Status 'Disabling Task PR4B-AADM Launch PSADT for Interactive Migration'
 
 		$DisableScheduledTaskByPath = @{
-			TaskName         = "PR4B-AADM Launch PSADT for Interactive Migration"
-			TaskPath         = "\AAD Migration\"
+			TaskName = "PR4B-AADM Launch PSADT for Interactive Migration"
+			TaskPath = "\AAD Migration\"
 		}
 		Disable-ScheduledTaskByPath @DisableScheduledTaskByPath
 
