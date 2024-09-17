@@ -217,7 +217,7 @@ try {
         GithubRepository     = 'PSAppDeployToolkit/PSAppDeployToolkit'
         FilenamePatternMatch = '*.zip'
         DestinationDirectory = $PSScriptRoot
-        CustomizationsPath   = 'C:\code\IntuneDeviceMigration\DeviceMigration\PSADT-Customizations'
+        CustomizationsPath   = "$PSScriptroot\PSADT-Customizations"
     }
     Download-PSAppDeployToolkit @DownloadPSAppDeployToolkitParams
     #endregion
