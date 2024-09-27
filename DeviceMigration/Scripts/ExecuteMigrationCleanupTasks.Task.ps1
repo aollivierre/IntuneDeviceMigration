@@ -1,4 +1,4 @@
-$mode = $env:EnvironmentMode
+$global:mode = $env:EnvironmentMode
 
 #region FIRING UP MODULE STARTER
 #################################################################################################
@@ -9,7 +9,7 @@ $mode = $env:EnvironmentMode
 
 # Define a hashtable for splatting
 $moduleStarterParams = @{
-    Mode                   = $mode
+    Mode                   = $global:mode
     SkipPSGalleryModules   = $true
     SkipCheckandElevate    = $true
     SkipPowerShell7Install = $true
@@ -18,7 +18,7 @@ $moduleStarterParams = @{
 }
 
 # Call the function using the splat
-Invoke-ModuleStarter @moduleStarterParams
+# Invoke-ModuleStarter @moduleStarterParams
 
 #endregion FIRING UP MODULE STARTER
 
@@ -109,28 +109,32 @@ try {
     # performs cleanup tasks after migration, including removing temporary user accounts, disabling local user accounts, removing scheduled tasks, clearing OneDrive cache, and setting registry values for disabling legal notices
     $ExecuteMigrationCleanupTasksParams = @{
         TempUser             = "MigrationInProgress"
-        RegistrySettings     = @{
-            "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" = @{
-                "dontdisplaylastusername" = @{
-                    "Type" = "DWORD"
-                    "Data" = "0"
-                }
-                "legalnoticecaption"      = @{
-                    "Type" = "String"
-                    "Data" = ""
-                }
-                "legalnoticetext"         = @{
-                    "Type" = "String"
-                    "Data" = ""
-                }
+        RegistrySettings     = @(
+            @{
+                RegValName = "dontdisplaylastusername"
+                RegValType = "DWORD"
+                RegValData = "0"
+                RegKeyPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+            },
+            @{
+                RegValName = "legalnoticecaption"
+                RegValType = "String"
+                RegValData = ""
+                RegKeyPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+            },
+            @{
+                RegValName = "legalnoticetext"
+                RegValType = "String"
+                RegValData = ""
+                RegKeyPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+            },
+            @{
+                RegValName = "NoLockScreen"
+                RegValType = "DWORD"
+                RegValData = "0"
+                RegKeyPath = "HKLM:\Software\Policies\Microsoft\Windows\Personalization"
             }
-            "HKLM:\Software\Policies\Microsoft\Windows\Personalization"       = @{
-                "NoLockScreen" = @{
-                    "Type" = "DWORD"
-                    "Data" = "0"
-                }
-            }
-        }
+        )
         MigrationDirectories = @(
             "C:\ProgramData\AADMigration\Files",
             # "C:\ProgramData\AADMigration\Scripts",
@@ -138,7 +142,9 @@ try {
         )
         Mode                 = "Dev"
     }
+    
     Execute-MigrationCleanupTasks @ExecuteMigrationCleanupTasksParams
+    
     #endregion
     
     #region HANDLE PSF LOGGING

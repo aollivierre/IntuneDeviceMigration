@@ -498,7 +498,7 @@ Try {
 
 		Show-InstallationProgress -Status 'Computer has left the domain and will reboot now to start Entra Join (Phase 1)'
 
-		Restart-ComputerIfNeeded
+		# Restart-ComputerIfNeeded
 
 		## Display a message at the end of the install
 		If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait }

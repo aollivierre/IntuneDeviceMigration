@@ -5,6 +5,8 @@
 #                                                                                               #
 #################################################################################################
 
+Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
+
 # Define a hashtable for splatting
 $moduleStarterParams = @{
     Mode                   = "dev"

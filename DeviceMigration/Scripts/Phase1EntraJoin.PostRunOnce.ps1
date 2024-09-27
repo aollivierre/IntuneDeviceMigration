@@ -1,4 +1,4 @@
-$mode = $env:EnvironmentMode
+$global:mode = $env:EnvironmentMode
 
 #region FIRING UP MODULE STARTER
 #################################################################################################
@@ -9,7 +9,7 @@ $mode = $env:EnvironmentMode
 
 # Define a hashtable for splatting
 $moduleStarterParams = @{
-    Mode                   = $mode
+    Mode                   = $global:mode
     SkipPSGalleryModules   = $true
     SkipCheckandElevate    = $true
     SkipPowerShell7Install = $true
@@ -18,7 +18,7 @@ $moduleStarterParams = @{
 }
 
 # Call the function using the splat
-Invoke-ModuleStarter @moduleStarterParams
+# Invoke-ModuleStarter @moduleStarterParams
 
 #endregion FIRING UP MODULE STARTER
 

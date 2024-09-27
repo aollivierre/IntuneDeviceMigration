@@ -1,4 +1,4 @@
-$mode = $env:EnvironmentMode
+$global:mode = $env:EnvironmentMode
 
 #region FIRING UP MODULE STARTER
 #################################################################################################
@@ -9,7 +9,7 @@ $mode = $env:EnvironmentMode
 
 # Define a hashtable for splatting
 $moduleStarterParams = @{
-    Mode                   = $mode
+    Mode                   = $global:mode
     SkipPSGalleryModules   = $true
     SkipCheckandElevate    = $true
     SkipPowerShell7Install = $true
@@ -18,7 +18,7 @@ $moduleStarterParams = @{
 }
 
 # Call the function using the splat
-Invoke-ModuleStarter @moduleStarterParams
+# Invoke-ModuleStarter @moduleStarterParams
 
 #endregion FIRING UP MODULE STARTER
 
@@ -113,36 +113,44 @@ try {
     # Example usage
 
     #blocks user input, displays a migration in progress form, creates a scheduled task for post-migration cleanup, escrows the BitLocker recovery key, sets various registry values for legal noctices, and optionally restarts the computer.
+
+    $RegistrySettings = @(
+        @{
+            RegValName = "AutoAdminLogon"
+            RegValType = "DWORD"
+            RegValData = "0"
+            RegKeyPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+        },
+        @{
+            RegValName = "dontdisplaylastusername"
+            RegValType = "DWORD"
+            RegValData = "1"
+            RegKeyPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+        },
+        @{
+            RegValName = "legalnoticecaption"
+            RegValType = "String"
+            RegValData = "Migration Completed"
+            RegKeyPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+        },
+        @{
+            RegValName = "legalnoticetext"
+            RegValType = "String"
+            RegValData = "This PC has been migrated to Azure Active Directory. Please log in to Windows using your email address and password."
+            RegKeyPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+        }
+    )
+    
+    
     $PostRunOncePhase2EscrowBitlockerParams = @{
         ImagePath        = "C:\ProgramData\AADMigration\Files\MigrationInProgress.bmp"
         TaskPath         = "AAD Migration"
         TaskName         = "Run Post migration cleanup"
-        # BitlockerDrives       = @("C:", "D:")
         BitlockerDrives  = @("C:")
-        RegistrySettings = @{
-            "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"     = @{
-                "AutoAdminLogon" = @{
-                    "Type" = "DWORD"
-                    "Data" = "0"
-                }
-            }
-            "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" = @{
-                "dontdisplaylastusername" = @{
-                    "Type" = "DWORD"
-                    "Data" = "1"
-                }
-                "legalnoticecaption"      = @{
-                    "Type" = "String"
-                    "Data" = "Migration Completed"
-                }
-                "legalnoticetext"         = @{
-                    "Type" = "String"
-                    "Data" = "This PC has been migrated to Azure Active Directory. Please log in to Windows using your email address and password."
-                }
-            }
-        }
+        RegistrySettings = $RegistrySettings  # Correctly assign the array here
         Mode             = $mode
     }
+    
     PostRunOnce-Phase2EscrowBitlocker @PostRunOncePhase2EscrowBitlockerParams
     #endregion Script Logic
     

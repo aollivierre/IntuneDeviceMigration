@@ -3,17 +3,21 @@
 # )
 
 # Set environment variable globally for all users
-[System.Environment]::SetEnvironmentVariable('EnvironmentMode', 'dev', 'Machine')
+
+$global:mode = 'prod'
+
+[System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'Machine')
+[System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'process')
 
 # Alternatively, use this PowerShell method (same effect)
 # Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'EnvironmentMode' -Value 'dev'
 
 
 # Retrieve the environment mode (default to 'prod' if not set)
-$mode = $env:EnvironmentMode
+$global:mode = $env:EnvironmentMode
 
 # Toggle based on the environment mode
-switch ($mode) {
+switch ($global:mode) {
     'dev' {
         Write-Host "Running in development mode" -ForegroundColor Yellow
         # Your development logic here
@@ -37,13 +41,17 @@ switch ($mode) {
 #                                                                                               #
 #################################################################################################
 
+Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
+
+# Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
+
 # Define a hashtable for splatting
 $moduleStarterParams = @{
-    Mode                   = $mode
-    SkipPSGalleryModules   = $true
-    SkipCheckandElevate    = $true
-    SkipPowerShell7Install = $true
-    SkipEnhancedModules    = $true
+    Mode                   = $global:mode
+    SkipPSGalleryModules   = $false
+    SkipCheckandElevate    = $false
+    SkipPowerShell7Install = $false
+    SkipEnhancedModules    = $false
     SkipGitRepos           = $true
 }
 
@@ -170,7 +178,7 @@ catch {
 } 
 #endregion HANDLE Transript LOGGING
 
-$DBG
+# $DBG
 
 try {
 
