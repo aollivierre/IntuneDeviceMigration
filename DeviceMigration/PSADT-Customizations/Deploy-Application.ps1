@@ -194,9 +194,9 @@ Try {
 		# Start-Transcript -Path $MigrationPath\Logs\LaunchMigration.txt -Append -Force
 
 
-		Show-InstallationProgress -Status 'FIRING UP MODULE STARTER'
+		# Show-InstallationProgress -Status 'FIRING UP MODULE STARTER'
 
-		$mode = $env:EnvironmentMode
+		$global:mode = $env:EnvironmentMode
 
 		#region FIRING UP MODULE STARTER
 		#################################################################################################
@@ -216,7 +216,7 @@ Try {
 		}
 		
 		# Call the function using the splat
-		Invoke-ModuleStarter @moduleStarterParams
+		# Invoke-ModuleStarter @moduleStarterParams
 		
 		#endregion FIRING UP MODULE STARTER
 
@@ -409,6 +409,9 @@ Try {
 				MaxRetries     = 5
 				RetryInterval  = 10
 			}
+
+
+			Show-InstallationProgress -Status 'Anlyzing Task AADM Get OneDrive Sync Util Status'
 
 			try {
 				$result = Analyze-OneDriveSyncUtilStatus @AnalyzeOneDriveSyncUtilStatusParams

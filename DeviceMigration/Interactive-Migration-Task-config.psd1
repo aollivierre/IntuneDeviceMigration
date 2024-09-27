@@ -30,8 +30,8 @@
     StartTimeOffsetMinutes  = 1                              # Start time offset for scheduled task
     TriggerType             = 'Logon'                        # "Daily", "Logon", or "AtStartup"
     LogonUserId             = 'administrator'                # Specify user ID for logon, if required
-    # StartBoundary           = "2024-08-16T12:00:00"  # Example start boundary time (optional)
-    Delay                   = "PT1M"                 # Example delay (optional, in ISO 8601 duration format)
+    # StartBoundary           = "2024-08-16T12:00:00"        # Example start boundary time (optional)
+    Delay                   = "PT1M"                         # Example delay (optional, in ISO 8601 duration format)
 
     # Task Principal Configuration
     PrincipalUserId         = 'NT AUTHORITY\SYSTEM'          # User ID for task principal
@@ -40,9 +40,9 @@
 
     # Task Registration Configuration
     RunOnDemand             = $false                         # Whether to run the task on demand
-    Repeat                  = $false                          # Whether to repeat the task
+    Repeat                  = $false                         # Whether to repeat the task
     TaskExecutionContext    = 'User'                         # Execution context for the task
-    TaskFolderPath          = "AAD Migration"                            # Folder path for the task default is "\"
+    TaskFolderPath          = "AAD Migration"                # Folder path for the task default is "\"
     TaskUserGroup           = 'Users'                        # User group for the task registration
     TaskRegistrationFlags   = 6                              # Flags for task registration
     TaskLogonType           = 4                              # Logon type for task registration
