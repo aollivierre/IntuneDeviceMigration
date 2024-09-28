@@ -2,16 +2,14 @@ param (
     [Switch]$SimulatingIntune = $false
 )
 
-
 function Test-Admin {
     $currentUser = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
     return $currentUser.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
-
-  # Elevate to administrator if not already
-  if (-not (Test-Admin)) {
-    Write-Log "Restarting script with elevated permissions..."
+# Elevate to administrator if not already
+if (-not (Test-Admin)) {
+    Write-Host "Restarting script with elevated permissions..."
     $startProcessParams = @{
         FilePath     = "powershell.exe"
         ArgumentList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $PSCommandPath)
@@ -43,20 +41,18 @@ if (-not $MyInvocation.MyCommand.Path) {
     New-Item -Path $downloadFolder -ItemType Directory | Out-Null
 
     # Download the script to the time-stamped folder
-    $localScriptPath = Join-Path -Path $downloadFolder -ChildPath "IntuneDeviceMigration-main\setup.ps1"
-    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/aollivierre/IntuneDeviceMigration/refs/heads/main/Setup.ps1" -OutFile $localScriptPath
+    $localScriptPath = Join-Path -Path $downloadFolder -ChildPath "setup.ps1"
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/aollivierre/IntuneDeviceMigration/main/Setup.ps1" -OutFile $localScriptPath
 
     Write-Host "Re-running the script locally from: $localScriptPath"
     
     # Re-run the script locally
     & $localScriptPath
 
-    # Exit # Exit after running the script locally
+    Exit # Exit after running the script locally
 }
-else
-
-{
-    Write-Host "Running as a local context, running in regular context locally..."
+else {
+    Write-Host "Running in regular context locally..."
 }
 
 # Core logic to download the entire repository and execute DeviceMigration.ps1
@@ -76,7 +72,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFile, $tempDir)
 
 # Execute the DeviceMigration.ps1 script
-$extractedDir = [System.IO.Path]::Combine($tempDir, "IntuneDeviceMigration-main\DeviceMigration")
+$extractedDir = [System.IO.Path]::Combine($tempDir, "IntuneDeviceMigration-main")
 $scriptPath = [System.IO.Path]::Combine($extractedDir, "DeviceMigration.ps1")
 
 # Open the destination folder for visual verification
