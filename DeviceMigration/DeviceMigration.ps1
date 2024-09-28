@@ -16,18 +16,48 @@ $global:mode = 'prod'
 # Retrieve the environment mode (default to 'prod' if not set)
 $global:mode = $env:EnvironmentMode
 
+function Write-AADMigrationLog {
+    param (
+        [string]$Message,
+        [string]$Level = "INFO"
+    )
+
+    # Get the PowerShell call stack to determine the actual calling function
+    $callStack = Get-PSCallStack
+    $callerFunction = if ($callStack.Count -ge 2) { $callStack[1].Command } else { '<Unknown>' }
+
+    # Prepare the formatted message with the actual calling function information
+    $formattedMessage = "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] [$Level] [$callerFunction] $Message"
+
+    # Display the log message based on the log level using Write-Host
+    switch ($Level.ToUpper()) {
+        "DEBUG" { Write-Host $formattedMessage -ForegroundColor DarkGray }
+        "INFO" { Write-Host $formattedMessage -ForegroundColor Green }
+        "NOTICE" { Write-Host $formattedMessage -ForegroundColor Cyan }
+        "WARNING" { Write-Host $formattedMessage -ForegroundColor Yellow }
+        "ERROR" { Write-Host $formattedMessage -ForegroundColor Red }
+        "CRITICAL" { Write-Host $formattedMessage -ForegroundColor Magenta }
+        default { Write-Host $formattedMessage -ForegroundColor White }
+    }
+
+    # Append to log file
+    $logFilePath = [System.IO.Path]::Combine($env:TEMP, 'setupAADMigration.log')
+    $formattedMessage | Out-File -FilePath $logFilePath -Append -Encoding utf8
+}
+
+
 # Toggle based on the environment mode
 switch ($global:mode) {
     'dev' {
-        Write-Host "Running in development mode" -ForegroundColor Yellow
+        Write-AADMigrationLog "Running in development mode" -ForegroundColor Yellow
         # Your development logic here
     }
     'prod' {
-        Write-Host "Running in production mode" -ForegroundColor Green
+        Write-AADMigrationLog "Running in production mode" -ForegroundColor Green
         # Your production logic here
     }
     default {
-        Write-Host "Unknown mode. Defaulting to production." -ForegroundColor Red
+        Write-AADMigrationLog "Unknown mode. Defaulting to production." -ForegroundColor Red
         # Default to production
     }
 }
@@ -110,37 +140,37 @@ function Remove-AADMigrationArtifacts {
     param ()
 
     Begin {
-        Write-Host "Starting AAD migration artifact cleanup..."
+        Write-AADMigrationLog "Starting AAD migration artifact cleanup..."
     }
 
     Process {
         # Remove the C:\logs directory if it exists
         $logsPath = "C:\logs"
         if (Test-Path -Path $logsPath) {
-            Write-Host "Removing $logsPath..."
+            Write-AADMigrationLog "Removing $logsPath..."
             Remove-Item -Path $logsPath -Recurse -Force
         } else {
-            Write-Host "$logsPath does not exist, skipping..."
+            Write-AADMigrationLog "$logsPath does not exist, skipping..."
         }
 
         # Remove the C:\ProgramData\AADMigration directory if it exists
         $aadMigrationPath = "C:\ProgramData\AADMigration"
         if (Test-Path -Path $aadMigrationPath) {
-            Write-Host "Removing $aadMigrationPath..."
+            Write-AADMigrationLog "Removing $aadMigrationPath..."
             Remove-Item -Path $aadMigrationPath -Recurse -Force
         } else {
-            Write-Host "$aadMigrationPath does not exist, skipping..."
+            Write-AADMigrationLog "$aadMigrationPath does not exist, skipping..."
         }
 
         # Remove all scheduled tasks under the AAD Migration task path
         $scheduledTasks = Get-ScheduledTask -TaskPath '\AAD Migration\' -ErrorAction SilentlyContinue
         if ($scheduledTasks) {
             foreach ($task in $scheduledTasks) {
-                Write-Host "Removing scheduled task: $($task.TaskName)..."
+                Write-AADMigrationLog "Removing scheduled task: $($task.TaskName)..."
                 Unregister-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -Confirm:$false
             }
         } else {
-            Write-Host "No scheduled tasks found under \AAD Migration, skipping..."
+            Write-AADMigrationLog "No scheduled tasks found under \AAD Migration, skipping..."
         }
 
         # Remove the scheduled task folder named AAD Migration
@@ -150,9 +180,9 @@ function Remove-AADMigrationArtifacts {
             $rootFolder = $taskFolder.GetFolder("\")
             $aadMigrationFolder = $rootFolder.GetFolder("AAD Migration")
             $aadMigrationFolder.DeleteFolder("", 0)
-            Write-Host "Scheduled task folder AAD Migration removed successfully."
+            Write-AADMigrationLog "Scheduled task folder AAD Migration removed successfully."
         } catch {
-            Write-Host "Scheduled task folder AAD Migration does not exist or could not be removed."
+            Write-AADMigrationLog "Scheduled task folder AAD Migration does not exist or could not be removed."
         }
 
         # Remove the local user called MigrationInProgress
@@ -160,16 +190,16 @@ function Remove-AADMigrationArtifacts {
         try {
             $user = Get-LocalUser -Name $localUser -ErrorAction Stop
             if ($user) {
-                Write-Host "Removing local user $localUser..."
+                Write-AADMigrationLog "Removing local user $localUser..."
                 Remove-LocalUser -Name $localUser -Force
             }
         } catch {
-            Write-Host "Local user $localUser does not exist, skipping..."
+            Write-AADMigrationLog "Local user $localUser does not exist, skipping..."
         }
     }
 
     End {
-        Write-Host "AAD migration artifact cleanup completed."
+        Write-AADMigrationLog "AAD migration artifact cleanup completed."
     }
 }
 
@@ -256,12 +286,12 @@ catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
     if ($transcriptPath) {
         Stop-Transcript
-        Write-Host "Transcript stopped." -ForegroundColor Cyan
+        Write-AADMigrationLog "Transcript stopped." -ForegroundColor Cyan
         # Stop logging in the finally block
 
     }
     else {
-        Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+        Write-AADMigrationLog "Transcript was not started due to an earlier error." -ForegroundColor Red
     }
 
     # Stop PSF Logging
@@ -518,7 +548,7 @@ try {
     #                                                                                               #
     #################################################################################################
     # $parentScriptName = Get-ParentScriptName
-    # Write-Host "Parent Script Name: $parentScriptName"
+    # Write-AADMigrationLog "Parent Script Name: $parentScriptName"
 
     # $HandlePSFLoggingParams = @{
     #     SystemSourcePathWindowsPS = "C:\Windows\System32\config\systemprofile\AppData\Roaming\WindowsPowerShell\PSFramework\Logs\"
@@ -540,7 +570,7 @@ catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
     if ($transcriptPath) {
         Stop-Transcript
-        Write-Host "Transcript stopped." -ForegroundColor Cyan
+        Write-AADMigrationLog "Transcript stopped." -ForegroundColor Cyan
         # Stop logging in the finally block
     }
 
@@ -559,12 +589,12 @@ finally {
     # Ensure that the transcript is stopped even if an error occurs
     if ($transcriptPath) {
         Stop-Transcript
-        Write-Host "Transcript stopped." -ForegroundColor Cyan
+        Write-AADMigrationLog "Transcript stopped." -ForegroundColor Cyan
         # Stop logging in the finally block
 
     }
     else {
-        Write-Host "Transcript was not started due to an earlier error." -ForegroundColor Red
+        Write-AADMigrationLog "Transcript was not started due to an earlier error." -ForegroundColor Red
     }
     
     # Ensure the log is written before proceeding
