@@ -2,6 +2,25 @@ param (
     [Switch]$SimulatingIntune = $false
 )
 
+
+function Test-Admin {
+    $currentUser = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+    return $currentUser.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+
+  # Elevate to administrator if not already
+  if (-not (Test-Admin)) {
+    Write-Log "Restarting script with elevated permissions..."
+    $startProcessParams = @{
+        FilePath     = "powershell.exe"
+        ArgumentList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $PSCommandPath)
+        Verb         = "RunAs"
+    }
+    Start-Process @startProcessParams
+    exit
+}
+
 # Set Execution Policy to Bypass if not already set
 $currentExecutionPolicy = Get-ExecutionPolicy
 if ($currentExecutionPolicy -ne 'Bypass') {
