@@ -32,7 +32,7 @@ if (-not $MyInvocation.MyCommand.Path) {
     # Re-run the script locally
     & $localScriptPath
 
-    Exit # Exit after running the script locally
+    # Exit # Exit after running the script locally
 }
 else
 
