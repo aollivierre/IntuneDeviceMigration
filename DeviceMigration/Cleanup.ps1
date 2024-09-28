@@ -47,7 +47,7 @@ function Remove-AADMigrationArtifacts {
         }
 
         # Remove all scheduled tasks under the AAD Migration task path
-        $scheduledTasks = Get-ScheduledTask -TaskPath '\AAD Migration\'
+        $scheduledTasks = Get-ScheduledTask -TaskPath '\AAD Migration\' -ErrorAction SilentlyContinue
         if ($scheduledTasks) {
             foreach ($task in $scheduledTasks) {
                 Write-Host "Removing scheduled task: $($task.TaskName)..."

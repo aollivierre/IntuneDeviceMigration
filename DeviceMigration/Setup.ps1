@@ -27,34 +27,44 @@ if (-not $MyInvocation.MyCommand.Path) {
     $localScriptPath = Join-Path -Path $downloadFolder -ChildPath "setup.ps1"
     Invoke-WebRequest -Uri "https://raw.githubusercontent.com/aollivierre/IntuneDeviceMigration/main/setup.ps1" -OutFile $localScriptPath
 
-    Write-Host "Downloading the entire repository as a ZIP file..."
-
-    # Download the ZIP file from GitHub
-    $zipUrl = "https://github.com/aollivierre/IntuneDeviceMigration/archive/refs/heads/main.zip"
-    $zipFile = Join-Path -Path $downloadFolder -ChildPath "IntuneDeviceMigration.zip"
-    Invoke-WebRequest -Uri $zipUrl -OutFile $zipFile
-
-    Write-Host "Extracting the ZIP file..."
-
-    # Extract the ZIP file
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFile, $downloadFolder)
-
-    # Execute the DeviceMigration.ps1 script
-    $extractedDir = Join-Path -Path $downloadFolder -ChildPath "IntuneDeviceMigration-main"
-    $migrationScriptPath = Join-Path -Path $extractedDir -ChildPath "DeviceMigration.ps1"
-
-    if (Test-Path $migrationScriptPath) {
-        & $migrationScriptPath
-    } else {
-        Write-Host "DeviceMigration.ps1 not found!" -ForegroundColor Red
-    }
-
-    # Open the destination folder for visual verification
-    Start-Process "explorer.exe" -ArgumentList $extractedDir
+    Write-Host "Re-running the script locally from: $localScriptPath"
+    
+    # Re-run the script locally
+    & $localScriptPath
 
     Exit # Exit after running the script locally
+}
+else
+
+{
+    Write-Host "Running as a local context, running in regular context locally..."
+}
+
+# Core logic to download the entire repository and execute DeviceMigration.ps1
+
+# Create a time-stamped folder in the temp directory
+$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+$tempDir = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "IntuneDeviceMigration_$timestamp")
+New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+
+# Download the ZIP file from GitHub
+$repoUrl = "https://github.com/aollivierre/IntuneDeviceMigration/archive/refs/heads/main.zip"
+$zipFile = [System.IO.Path]::Combine($tempDir, "IntuneDeviceMigration.zip")
+Invoke-WebRequest -Uri $repoUrl -OutFile $zipFile
+
+# Extract the ZIP file
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+[System.IO.Compression.ZipFile]::ExtractToDirectory($zipFile, $tempDir)
+
+# Execute the DeviceMigration.ps1 script
+$extractedDir = [System.IO.Path]::Combine($tempDir, "IntuneDeviceMigration-main\DeviceMigration")
+$scriptPath = [System.IO.Path]::Combine($extractedDir, "DeviceMigration.ps1")
+
+# Open the destination folder for visual verification
+Start-Process "explorer.exe" -ArgumentList $extractedDir
+
+if (Test-Path $scriptPath) {
+    & $scriptPath
 } else {
-    Write-Host "Running in a regular context..."
-    # Here you can place the logic that should execute when the script is not running as a web script
+    Write-Host "DeviceMigration.ps1 not found!" -ForegroundColor Red
 }
