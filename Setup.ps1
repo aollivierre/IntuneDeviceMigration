@@ -49,6 +49,7 @@ if (-not $MyInvocation.MyCommand.Path) {
     # Re-run the script locally
     & $localScriptPath
 
+    write-host 'Exiting web script'
     Exit # Exit after running the script locally
 }
 else {
