@@ -25,7 +25,7 @@ if (-not $MyInvocation.MyCommand.Path) {
 
     # Download the script to the time-stamped folder
     $localScriptPath = Join-Path -Path $downloadFolder -ChildPath "IntuneDeviceMigration-main\setup.ps1"
-    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/aollivierre/IntuneDeviceMigration/main/setup.ps1" -OutFile $localScriptPath
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/aollivierre/IntuneDeviceMigration/refs/heads/main/Setup.ps1" -OutFile $localScriptPath
 
     Write-Host "Re-running the script locally from: $localScriptPath"
     
