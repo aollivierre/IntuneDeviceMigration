@@ -46,10 +46,20 @@ if (-not $MyInvocation.MyCommand.Path) {
 
     Write-Host "Re-running the script locally from: $localScriptPath"
     
-    # Re-run the script locally
-    & $localScriptPath
+    # Re-run the script locally with elevation if needed
+    if (-not (Test-Admin)) {
+        Write-Host "Relaunching downloaded script with elevated permissions..."
+        $startProcessParams = @{
+            FilePath     = "powershell.exe"
+            ArgumentList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $localScriptPath)
+            Verb         = "RunAs"
+        }
+        Start-Process @startProcessParams
+        exit
+    } else {
+        & $localScriptPath
+    }
 
-    write-host 'Exiting web script'
     Exit # Exit after running the script locally
 }
 else {
@@ -72,8 +82,8 @@ Invoke-WebRequest -Uri $repoUrl -OutFile $zipFile
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFile, $tempDir)
 
-# Execute the DeviceMigration.ps1 script
-$extractedDir = [System.IO.Path]::Combine($tempDir, "IntuneDeviceMigration-main")
+# Update the script path to include the correct subfolder
+$extractedDir = [System.IO.Path]::Combine($tempDir, "IntuneDeviceMigration-main", "DeviceMigration")
 $scriptPath = [System.IO.Path]::Combine($extractedDir, "DeviceMigration.ps1")
 
 # Open the destination folder for visual verification
