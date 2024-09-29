@@ -49,15 +49,15 @@ function Write-AADMigrationLog {
 # Toggle based on the environment mode
 switch ($global:mode) {
     'dev' {
-        Write-AADMigrationLog "Running in development mode" -ForegroundColor Yellow
+        Write-AADMigrationLog "Running in development mode" -Level 'Warning'
         # Your development logic here
     }
     'prod' {
-        Write-AADMigrationLog "Running in production mode" -ForegroundColor Green
+        Write-AADMigrationLog "Running in production mode" -Level 'INFO'
         # Your production logic here
     }
     default {
-        Write-AADMigrationLog "Unknown mode. Defaulting to production." -ForegroundColor Red
+        Write-AADMigrationLog "Unknown mode. Defaulting to production." -Level 'ERROR'
         # Default to production
     }
 }
@@ -71,7 +71,12 @@ switch ($global:mode) {
 #                                                                                               #
 #################################################################################################
 
+
+Wait-Debugger
+
 Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
+
+Wait-Debugger
 
 # Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
 
@@ -147,10 +152,10 @@ function Remove-AADMigrationArtifacts {
         # Remove the C:\logs directory if it exists
         $logsPath = "C:\logs"
         if (Test-Path -Path $logsPath) {
-            Write-AADMigrationLog "Removing $logsPath..."
+            Write-AADMigrationLog "Removing $logsPath..." -Level 'INFO'
             Remove-Item -Path $logsPath -Recurse -Force
         } else {
-            Write-AADMigrationLog "$logsPath does not exist, skipping..."
+            Write-AADMigrationLog "$logsPath does not exist, skipping..." -Level 'WARNING'
         }
 
         # Remove the C:\ProgramData\AADMigration directory if it exists
@@ -159,18 +164,18 @@ function Remove-AADMigrationArtifacts {
             Write-AADMigrationLog "Removing $aadMigrationPath..."
             Remove-Item -Path $aadMigrationPath -Recurse -Force
         } else {
-            Write-AADMigrationLog "$aadMigrationPath does not exist, skipping..."
+            Write-AADMigrationLog "$aadMigrationPath does not exist, skipping..." -Level 'WARNING'
         }
 
         # Remove all scheduled tasks under the AAD Migration task path
         $scheduledTasks = Get-ScheduledTask -TaskPath '\AAD Migration\' -ErrorAction SilentlyContinue
         if ($scheduledTasks) {
             foreach ($task in $scheduledTasks) {
-                Write-AADMigrationLog "Removing scheduled task: $($task.TaskName)..."
+                Write-AADMigrationLog "Removing scheduled task: $($task.TaskName)..." -Level 'INFO'
                 Unregister-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -Confirm:$false
             }
         } else {
-            Write-AADMigrationLog "No scheduled tasks found under \AAD Migration, skipping..."
+            Write-AADMigrationLog "No scheduled tasks found under \AAD Migration, skipping..." -Level 'WARNING'
         }
 
         # Remove the scheduled task folder named AAD Migration
@@ -180,9 +185,9 @@ function Remove-AADMigrationArtifacts {
             $rootFolder = $taskFolder.GetFolder("\")
             $aadMigrationFolder = $rootFolder.GetFolder("AAD Migration")
             $aadMigrationFolder.DeleteFolder("", 0)
-            Write-AADMigrationLog "Scheduled task folder AAD Migration removed successfully."
+            Write-AADMigrationLog "Scheduled task folder AAD Migration removed successfully." -Level 'INFO'
         } catch {
-            Write-AADMigrationLog "Scheduled task folder AAD Migration does not exist or could not be removed."
+            Write-AADMigrationLog "Scheduled task folder AAD Migration does not exist or could not be removed." -Level 'ERROR'
         }
 
         # Remove the local user called MigrationInProgress
@@ -190,16 +195,16 @@ function Remove-AADMigrationArtifacts {
         try {
             $user = Get-LocalUser -Name $localUser -ErrorAction Stop
             if ($user) {
-                Write-AADMigrationLog "Removing local user $localUser..."
+                Write-AADMigrationLog "Removing local user $localUser..." -Level 'INFO'
                 Remove-LocalUser -Name $localUser -Force
             }
         } catch {
-            Write-AADMigrationLog "Local user $localUser does not exist, skipping..."
+            Write-AADMigrationLog "Local user $localUser does not exist, skipping..." -Level 'WARNING'
         }
     }
 
     End {
-        Write-AADMigrationLog "AAD migration artifact cleanup completed."
+        Write-AADMigrationLog "AAD migration artifact cleanup completed." -Level 'INFO'
     }
 }
 
@@ -286,12 +291,12 @@ catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
     if ($transcriptPath) {
         Stop-Transcript
-        Write-AADMigrationLog "Transcript stopped." -ForegroundColor Cyan
+        Write-AADMigrationLog "Transcript stopped." -Level 'WARNING'
         # Stop logging in the finally block
 
     }
     else {
-        Write-AADMigrationLog "Transcript was not started due to an earlier error." -ForegroundColor Red
+        Write-AADMigrationLog "Transcript was not started due to an earlier error." -Level 'ERROR'
     }
 
     # Stop PSF Logging
@@ -570,7 +575,7 @@ catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
     if ($transcriptPath) {
         Stop-Transcript
-        Write-AADMigrationLog "Transcript stopped." -ForegroundColor Cyan
+        Write-AADMigrationLog "Transcript stopped." -Level 'WARNING'
         # Stop logging in the finally block
     }
 
@@ -589,12 +594,12 @@ finally {
     # Ensure that the transcript is stopped even if an error occurs
     if ($transcriptPath) {
         Stop-Transcript
-        Write-AADMigrationLog "Transcript stopped." -ForegroundColor Cyan
+        Write-AADMigrationLog "Transcript stopped." -Level 'WARNING'
         # Stop logging in the finally block
 
     }
     else {
-        Write-AADMigrationLog "Transcript was not started due to an earlier error." -ForegroundColor Red
+        Write-AADMigrationLog "Transcript was not started due to an earlier error." -Level 'ERROR'
     }
     
     # Ensure the log is written before proceeding
