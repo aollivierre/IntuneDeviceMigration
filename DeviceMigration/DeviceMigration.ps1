@@ -72,11 +72,11 @@ switch ($global:mode) {
 #################################################################################################
 
 
-Wait-Debugger
+# Wait-Debugger
 
 Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
 
-Wait-Debugger
+# Wait-Debugger
 
 # Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
 
