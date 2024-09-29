@@ -73,36 +73,43 @@ if (-not $MyInvocation.MyCommand.Path) {
         }
         Start-Process @startProcessParams
         exit
-    } else {
+    }
+    else {
         & $localScriptPath
     }
 
     Exit # Exit after running the script locally
-} else {
+}
+else {
     Write-AADMigrationLog -Message "Running in regular context locally..." -Level "INFO"
+
+
+
+    # # Elevate to administrator if not already
+    if (-not (Test-Admin)) {
+        Write-AADMigrationLog -Message "Restarting script with elevated permissions..." -Level "NOTICE"
+        $startProcessParams = @{
+            FilePath     = "powershell.exe"
+            ArgumentList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $PSCommandPath)
+            Verb         = "RunAs"
+        }
+        Start-Process @startProcessParams
+        exit
+    }
 }
 
 
 
 
-# # Elevate to administrator if not already
-# if (-not (Test-Admin)) {
-#     Write-AADMigrationLog -Message "Restarting script with elevated permissions..." -Level "NOTICE"
-#     $startProcessParams = @{
-#         FilePath     = "powershell.exe"
-#         ArgumentList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $PSCommandPath)
-#         Verb         = "RunAs"
-#     }
-#     Start-Process @startProcessParams
-#     exit
-# }
+
 
 # Set Execution Policy to Bypass if not already set
 $currentExecutionPolicy = Get-ExecutionPolicy
 if ($currentExecutionPolicy -ne 'Bypass') {
     Write-AADMigrationLog -Message "Setting Execution Policy to Bypass..." -Level "NOTICE"
     Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
-} else {
+}
+else {
     Write-AADMigrationLog -Message "Execution Policy is already set to Bypass." -Level "INFO"
 }
 
@@ -135,6 +142,7 @@ Start-Process "explorer.exe" -ArgumentList $extractedDir
 if (Test-Path $scriptPath) {
     Write-AADMigrationLog -Message "Executing DeviceMigration.ps1 script..." -Level "NOTICE"
     & $scriptPath
-} else {
+}
+else {
     Write-AADMigrationLog -Message "DeviceMigration.ps1 not found!" -Level "ERROR"
 }
