@@ -552,22 +552,22 @@ try {
     #                                 HANDLE PSF LOGGING                                            #
     #                                                                                               #
     #################################################################################################
-    # $parentScriptName = Get-ParentScriptName
-    # Write-AADMigrationLog "Parent Script Name: $parentScriptName"
+    $parentScriptName = Get-ParentScriptName
+    Write-AADMigrationLog "Parent Script Name: $parentScriptName"
 
-    # $HandlePSFLoggingParams = @{
-    #     SystemSourcePathWindowsPS = "C:\Windows\System32\config\systemprofile\AppData\Roaming\WindowsPowerShell\PSFramework\Logs\"
-    #     SystemSourcePathPS        = "C:\Windows\System32\config\systemprofile\AppData\Roaming\PowerShell\PSFramework\Logs\"
-    #     UserSourcePathWindowsPS   = "$env:USERPROFILE\AppData\Roaming\WindowsPowerShell\PSFramework\Logs\"
-    #     UserSourcePathPS          = "$env:USERPROFILE\AppData\Roaming\PowerShell\PSFramework\Logs\"
-    #     PSFPath                   = "C:\Logs\PSF"
-    #     ParentScriptName          = $parentScriptName
-    #     JobName                   = $JobName
-    #     SkipSYSTEMLogCopy         = $false
-    #     SkipSYSTEMLogRemoval      = $false
-    # }
+    $HandlePSFLoggingParams = @{
+        SystemSourcePathWindowsPS = "C:\Windows\System32\config\systemprofile\AppData\Roaming\WindowsPowerShell\PSFramework\Logs\"
+        SystemSourcePathPS        = "C:\Windows\System32\config\systemprofile\AppData\Roaming\PowerShell\PSFramework\Logs\"
+        UserSourcePathWindowsPS   = "$env:USERPROFILE\AppData\Roaming\WindowsPowerShell\PSFramework\Logs\"
+        UserSourcePathPS          = "$env:USERPROFILE\AppData\Roaming\PowerShell\PSFramework\Logs\"
+        PSFPath                   = "C:\Logs\PSF"
+        ParentScriptName          = $parentScriptName
+        JobName                   = $JobName
+        SkipSYSTEMLogCopy         = $false
+        SkipSYSTEMLogRemoval      = $false
+    }
 
-    # Handle-PSFLogging @HandlePSFLoggingParams
+    Handle-PSFLogging @HandlePSFLoggingParams
 
     #endregion
 }

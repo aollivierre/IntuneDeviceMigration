@@ -36,26 +36,14 @@ function Write-AADMigrationLog {
     $formattedMessage | Out-File -FilePath $logFilePath -Append -Encoding utf8
 }
 
-# Elevate to administrator if not already
-if (-not (Test-Admin)) {
-    Write-AADMigrationLog -Message "Restarting script with elevated permissions..." -Level "NOTICE"
-    $startProcessParams = @{
-        FilePath     = "powershell.exe"
-        ArgumentList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $PSCommandPath)
-        Verb         = "RunAs"
-    }
-    Start-Process @startProcessParams
-    exit
-}
 
-# Set Execution Policy to Bypass if not already set
-$currentExecutionPolicy = Get-ExecutionPolicy
-if ($currentExecutionPolicy -ne 'Bypass') {
-    Write-AADMigrationLog -Message "Setting Execution Policy to Bypass..." -Level "NOTICE"
-    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
-} else {
-    Write-AADMigrationLog -Message "Execution Policy is already set to Bypass." -Level "INFO"
-}
+
+#region CHECKING IF RUNNING AS WEB SCRIPT
+#################################################################################################
+#                                                                                               #
+#                                 CHECKING IF RUNNING AS WEB SCRIPT                             #
+#                                                                                               #
+#################################################################################################
 
 # Check if running as a web script (no $MyInvocation.MyCommand.Path)
 if (-not $MyInvocation.MyCommand.Path) {
@@ -93,6 +81,33 @@ if (-not $MyInvocation.MyCommand.Path) {
 } else {
     Write-AADMigrationLog -Message "Running in regular context locally..." -Level "INFO"
 }
+
+
+
+
+# # Elevate to administrator if not already
+# if (-not (Test-Admin)) {
+#     Write-AADMigrationLog -Message "Restarting script with elevated permissions..." -Level "NOTICE"
+#     $startProcessParams = @{
+#         FilePath     = "powershell.exe"
+#         ArgumentList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $PSCommandPath)
+#         Verb         = "RunAs"
+#     }
+#     Start-Process @startProcessParams
+#     exit
+# }
+
+# Set Execution Policy to Bypass if not already set
+$currentExecutionPolicy = Get-ExecutionPolicy
+if ($currentExecutionPolicy -ne 'Bypass') {
+    Write-AADMigrationLog -Message "Setting Execution Policy to Bypass..." -Level "NOTICE"
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+} else {
+    Write-AADMigrationLog -Message "Execution Policy is already set to Bypass." -Level "INFO"
+}
+
+
+#endregion CHECKING IF RUNNING AS WEB SCRIPT
 
 # Core logic to download the entire repository and execute DeviceMigration.ps1
 
