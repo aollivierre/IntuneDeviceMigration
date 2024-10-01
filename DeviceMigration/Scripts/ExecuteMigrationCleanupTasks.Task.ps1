@@ -8,14 +8,14 @@ $global:mode = $env:EnvironmentMode
 #################################################################################################
 
 # Define a hashtable for splatting
-$moduleStarterParams = @{
-    Mode                   = $global:mode
-    SkipPSGalleryModules   = $true
-    SkipCheckandElevate    = $true
-    SkipPowerShell7Install = $true
-    SkipEnhancedModules    = $true
-    SkipGitRepos           = $true
-}
+# $moduleStarterParams = @{
+#     Mode                   = $global:mode
+#     SkipPSGalleryModules   = $true
+#     SkipCheckandElevate    = $true
+#     SkipPowerShell7Install = $true
+#     SkipEnhancedModules    = $true
+#     SkipGitRepos           = $true
+# }
 
 # Call the function using the splat
 # Invoke-ModuleStarter @moduleStarterParams
@@ -139,6 +139,7 @@ try {
             "C:\ProgramData\AADMigration\Files",
             # "C:\ProgramData\AADMigration\Scripts",
             "C:\ProgramData\AADMigration\Toolkit"
+            "C:\temp"
         )
         Mode                 = "Dev"
     }

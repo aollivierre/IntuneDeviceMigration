@@ -154,7 +154,8 @@ function Remove-AADMigrationArtifacts {
         if (Test-Path -Path $logsPath) {
             Write-AADMigrationLog "Removing $logsPath..." -Level 'INFO'
             Remove-Item -Path $logsPath -Recurse -Force
-        } else {
+        }
+        else {
             Write-AADMigrationLog "$logsPath does not exist, skipping..." -Level 'WARNING'
         }
 
@@ -163,8 +164,18 @@ function Remove-AADMigrationArtifacts {
         if (Test-Path -Path $aadMigrationPath) {
             Write-AADMigrationLog "Removing $aadMigrationPath..."
             Remove-Item -Path $aadMigrationPath -Recurse -Force
-        } else {
+        }
+        else {
             Write-AADMigrationLog "$aadMigrationPath does not exist, skipping..." -Level 'WARNING'
+        }
+
+        $aadMigrationsecretspath = "C:\temp"
+        if (Test-Path -Path $aadMigrationsecretspath) {
+            Write-AADMigrationLog "Removing $aadMigrationsecretspath..."
+            Remove-Item -Path $aadMigrationsecretspath -Recurse -Force
+        }
+        else {
+            Write-AADMigrationLog "$aadMigrationsecretspath does not exist, skipping..." -Level 'WARNING'
         }
 
         # Remove all scheduled tasks under the AAD Migration task path
@@ -174,7 +185,8 @@ function Remove-AADMigrationArtifacts {
                 Write-AADMigrationLog "Removing scheduled task: $($task.TaskName)..." -Level 'INFO'
                 Unregister-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -Confirm:$false
             }
-        } else {
+        }
+        else {
             Write-AADMigrationLog "No scheduled tasks found under \AAD Migration, skipping..." -Level 'WARNING'
         }
 
@@ -186,7 +198,8 @@ function Remove-AADMigrationArtifacts {
             $aadMigrationFolder = $rootFolder.GetFolder("AAD Migration")
             $aadMigrationFolder.DeleteFolder("", 0)
             Write-AADMigrationLog "Scheduled task folder AAD Migration removed successfully." -Level 'INFO'
-        } catch {
+        }
+        catch {
             Write-AADMigrationLog "Scheduled task folder AAD Migration does not exist or could not be removed." -Level 'ERROR'
         }
 
@@ -198,7 +211,8 @@ function Remove-AADMigrationArtifacts {
                 Write-AADMigrationLog "Removing local user $localUser..." -Level 'INFO'
                 Remove-LocalUser -Name $localUser -Force
             }
-        } catch {
+        }
+        catch {
             Write-AADMigrationLog "Local user $localUser does not exist, skipping..." -Level 'WARNING'
         }
     }
@@ -363,6 +377,13 @@ try {
     }
     Download-PSAppDeployToolkit @DownloadPSAppDeployToolkitParams
     #endregion
+
+
+    # Ensure you are in the script's directory
+    & "$PSScriptRoot\Decrypt-PPKG.ps1"
+
+    
+
 
     # Import migration configuration
     $ConfigFileName = "MigrationConfig.psd1"

@@ -28,6 +28,35 @@
 
 
 
+function Write-GitHubAPIWebScriptLog {
+    param (
+        [string]$Message,
+        [string]$Level = "INFO"
+    )
+
+    # Get the PowerShell call stack to determine the actual calling function
+    $callStack = Get-PSCallStack
+    $callerFunction = if ($callStack.Count -ge 2) { $callStack[1].Command } else { '<Unknown>' }
+
+    # Prepare the formatted message with the actual calling function information
+    $formattedMessage = "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] [$Level] [$callerFunction] $Message"
+
+    # Display the log message based on the log level using Write-Host
+    switch ($Level.ToUpper()) {
+        "DEBUG" { Write-Host $formattedMessage -ForegroundColor DarkGray }
+        "INFO" { Write-Host $formattedMessage -ForegroundColor Green }
+        "NOTICE" { Write-Host $formattedMessage -ForegroundColor Cyan }
+        "WARNING" { Write-Host $formattedMessage -ForegroundColor Yellow }
+        "ERROR" { Write-Host $formattedMessage -ForegroundColor Red }
+        "CRITICAL" { Write-Host $formattedMessage -ForegroundColor Magenta }
+        default { Write-Host $formattedMessage -ForegroundColor White }
+    }
+
+    # Append to log file
+    $logFilePath = [System.IO.Path]::Combine($env:TEMP, 'setupAADMigration.log')
+    $formattedMessage | Out-File -FilePath $logFilePath -Append -Encoding utf8
+}
+
 
 function Authenticate-GitHubAPI {
     <#
@@ -55,12 +84,12 @@ function Authenticate-GitHubAPI {
     )
 
     begin {
-        Write-Host "Starting Authenticate-GitHubAPI function" -ForegroundColor Cyan
+        Write-GitHubAPIWebScriptLog -Message "Starting Authenticate-GitHubAPI function" -Level 'INFO'
     }
 
     process {
         try {
-            Write-Host "Authenticating with GitHub API..." -ForegroundColor Cyan
+            Write-GitHubAPIWebScriptLog -Message "Authenticating with GitHub API..." -Level 'INFO'
 
             # Define the secrets file path
             $secretsFilePath = Join-Path -Path $PSScriptRoot -ChildPath "secrets.psd1"
@@ -75,7 +104,7 @@ function Authenticate-GitHubAPI {
                     GitHubToken = $secureToken | ConvertFrom-SecureString
                 }
                 $secretsContent | Export-Clixml -Path $secretsFilePath
-                Write-Host "GitHub token has been saved securely to $secretsFilePath." -ForegroundColor Green
+                Write-GitHubAPIWebScriptLog -Message "GitHub token has been saved securely to $secretsFilePath." -Level 'INFO'
             }
             else {
                 # If the secrets file exists, import it
@@ -84,11 +113,11 @@ function Authenticate-GitHubAPI {
 
                 if (-not $secureToken) {
                     $errorMessage = "GitHub token not found in the secrets file."
-                    Write-Host $errorMessage -ForegroundColor Red
+                    Write-GitHubAPIWebScriptLog -Message $errorMessage -Level 'ERROR'
                     throw $errorMessage
                 }
 
-                Write-Host "Using GitHub token from secrets file for authentication." -ForegroundColor Cyan
+                Write-GitHubAPIWebScriptLog -Message "Using GitHub token from secrets file for authentication." -Level 'INFO'
             }
 
             # Convert secure string back to plain text for GitHub API authentication
@@ -106,22 +135,22 @@ function Authenticate-GitHubAPI {
             $authResponse = Invoke-RestMethod -Uri "$ApiUrl/user" -Headers $headers -Method Get
 
             if ($authResponse -and $authResponse.login) {
-                Write-Host "Successfully authenticated as $($authResponse.login)" -ForegroundColor Green
+                Write-GitHubAPIWebScriptLog -Message "Successfully authenticated as $($authResponse.login)" -Level 'INFO'
             }
             else {
                 $errorMessage = "Failed to authenticate with GitHub API. Please check the token and try again."
-                Write-Host $errorMessage -ForegroundColor Red
+                Write-GitHubAPIWebScriptLog -Message $errorMessage -Level 'ERROR'
                 throw $errorMessage
             }
         }
         catch {
-            Write-Host "An error occurred during GitHub API authentication: $($_.Exception.Message)" -ForegroundColor Red
+            Write-GitHubAPIWebScriptLog -Message "An error occurred during GitHub API authentication: $($_.Exception.Message)" -Level 'ERROR'
             throw $_
         }
     }
 
     end {
-        Write-Host "Authenticate-GitHubAPI function execution completed." -ForegroundColor Cyan
+        Write-GitHubAPIWebScriptLog -Message "Authenticate-GitHubAPI function execution completed." -Level 'INFO'
     }
 }
 
@@ -156,4 +185,3 @@ $localScriptPath = "$env:TEMP\Setup.ps1"
 
 # Now execute the downloaded script
 & $localScriptPath
-
