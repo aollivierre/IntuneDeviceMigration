@@ -392,7 +392,7 @@ Try {
 	
 			# 	#Check the most recent OD4B Sync status. Write error to event log if not healthy and exit
 			$taskParams = @{
-				TaskPath = "\AAD Migration"
+				TaskPath = "AAD Migration"
 				TaskName = "AADM Get OneDrive Sync Util Status"
 			}
 

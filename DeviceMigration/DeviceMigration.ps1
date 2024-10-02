@@ -4,7 +4,7 @@
 
 # Set environment variable globally for all users
 
-$global:mode = 'prod'
+$global:mode = 'dev'
 
 [System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'Machine')
 [System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'process')
@@ -74,11 +74,11 @@ switch ($global:mode) {
 
 # Wait-Debugger
 
-Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
+# Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
 
 # Wait-Debugger
 
-# Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
+Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
 
 # Define a hashtable for splatting
 $moduleStarterParams = @{
@@ -231,7 +231,22 @@ Remove-AADMigrationArtifacts
 #                            HANDLE PSF MODERN LOGGING                                          #
 #                                                                                               #
 #################################################################################################
-Set-PSFConfig -Fullname 'PSFramework.Logging.FileSystem.ModernLog' -Value $true -PassThru | Register-PSFConfig -Scope SystemDefault
+# Set-PSFConfig -Fullname 'PSFramework.Logging.FileSystem.ModernLog' -Value $true -PassThru | Register-PSFConfig -Scope SystemDefault
+
+
+# Check if the current user is an administrator
+$isAdmin = CheckAndElevate -ElevateIfNotAdmin $false
+
+# Set the configuration and register it with the appropriate scope based on admin privileges
+if ($isAdmin) {
+    # If the user is admin, register in the SystemDefault scope
+    Set-PSFConfig -Fullname 'PSFramework.Logging.FileSystem.ModernLog' -Value $true -PassThru | Register-PSFConfig -Scope SystemDefault
+} else {
+    # If the user is not admin, register in the User scope
+    Set-PSFConfig -Fullname 'PSFramework.Logging.FileSystem.ModernLog' -Value $true -PassThru | Register-PSFConfig -Scope UserDefault
+}
+
+
 
 # Define the base logs path and job name
 $JobName = "AAD_Migration"
@@ -434,7 +449,7 @@ try {
      
     
         $taskParams = @{
-            TaskPath = "\AAD Migration"
+            TaskPath = "AAD Migration"
             TaskName = "PR4B-AADM Launch PSADT for Interactive Migration"
         }
 
@@ -548,7 +563,7 @@ try {
      
     
         $taskParams = @{
-            TaskPath = "\AAD Migration"
+            TaskPath = "AAD Migration"
             TaskName = "PR4B-AADM Launch PSADT for Interactive Migration"
         }
 
