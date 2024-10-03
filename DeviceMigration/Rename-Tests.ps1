@@ -3,7 +3,8 @@
 # $targetDirectory = "C:\code\IntuneDeviceMigration\DeviceMigration\Archive\test\Pester\functions"
 # $targetDirectory = "C:\code\IntuneDeviceMigration\DeviceMigration\Archive\test\Cresendo"
 # $targetDirectory = "C:\code\IntuneDeviceMigration\DeviceMigration\Archive\test\Invoke-CommandAs"
-$targetDirectory = "C:\code\IntuneDeviceMigration\DeviceMigration\Archive\Migrate-ToAADJOnly"
+# $targetDirectory = "C:\code\IntuneDeviceMigration\DeviceMigration\Archive\Migrate-ToAADJOnly"
+$targetDirectory = "C:\code\CB\ModuleBuilder\InProgress\EnhancedAO.Secrets\Archive"
 
 # Step 1: List all files in the directory
 $files = Get-ChildItem -Path $targetDirectory -File

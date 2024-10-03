@@ -196,6 +196,22 @@ try {
     # $SecurePAT = Read-Host "Please enter your GitHub Personal Access Token (PAT)" -AsSecureString
     # & "$PSScriptRoot\Upload-LogstoGitHub.ps1" -SecurePAT $SecurePAT
 
+
+    # Define the path to the encrypted PAT file
+    $secureFilePath = "C:\temp\SecurePAT.txt"
+
+    # Ensure the file exists before attempting to read it
+    if (-not (Test-Path $secureFilePath)) {
+        Write-EnhancedLog -Message"The encrypted PAT file does not exist!" -Level 'ERROR'
+        exit 1
+    }
+
+    # Read the encrypted PAT from the file and convert it back to a SecureString
+    $SecurePAT = Get-Content -Path $secureFilePath | ConvertTo-SecureString
+
+    # Now you can pass $SecurePAT to any function or use it as needed
+    Write-EnhancedLog -Message "Successfully retrieved the encrypted PAT"
+
     $params = @{
         SecurePAT      = $securePat
         GitExePath     = "C:\Program Files\Git\bin\git.exe"
