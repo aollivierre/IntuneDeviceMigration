@@ -517,7 +517,40 @@ Try {
 		Show-InstallationProgress -Status 'Uploading logs to GitHub'
 
 		
+
+
+		# Define the path to the encrypted PAT file
+		$secureFilePath = "C:\temp\SecurePAT.txt"
+
+		# Ensure the file exists before attempting to read it
+		if (-not (Test-Path $secureFilePath)) {
+			Write-EnhancedLog -Message"The encrypted PAT file does not exist!" -Level 'ERROR'
+			exit 1
+		}
+
+		# Read the encrypted PAT from the file and convert it back to a SecureString
+		$SecurePAT = Get-Content -Path $secureFilePath | ConvertTo-SecureString
+
+		# Now you can pass $SecurePAT to any function or use it as needed
+		Write-EnhancedLog -Message "Successfully retrieved the encrypted PAT"
+
+
 		
+		$params = @{
+			SecurePAT      = $securePat
+			GitExePath     = "C:\Program Files\Git\bin\git.exe"
+			LogsFolderPath = "C:\logs"
+			TempCopyPath   = "C:\temp-logs"
+			TempGitPath    = "C:\temp-git"
+			GitUsername    = "aollivierre"
+			BranchName     = "main"
+			CommitMessage  = "Add logs.zip"
+			RepoName       = "syslog"
+			JobName        = "AADMigration"
+		}
+		
+		Upload-LogsToGitHub @params
+	
 
 
 		Show-InstallationProgress -Status 'Computer has left the domain and will reboot now to start Entra Join (Phase 1)'
@@ -525,7 +558,8 @@ Try {
 		# Restart-ComputerIfNeeded
 
 		## Display a message at the end of the install
-		If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait }
+		# If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait }
+		If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'Please reboot after confirming that all files are backed up to OneDrive' -ButtonRightText 'OK' -Icon Information -NoWait }
 	}
 	ElseIf ($deploymentType -ieq 'Uninstall') {
 		##*===============================================

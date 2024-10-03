@@ -16,11 +16,62 @@ $global:mode = 'prod'
 # Retrieve the environment mode (default to 'prod' if not set)
 $global:mode = $env:EnvironmentMode
 
+
+
+$global:LOG_ASYNC = $false
+
+# Check if async logging is enabled
+if ($global:LOG_ASYNC) {
+    # Initialize the global log queue and start the async logging job
+    if (-not $global:LogQueue) {
+        $global:LogQueue = [System.Collections.Concurrent.ConcurrentQueue[PSCustomObject]]::new()
+
+        $global:LogJob = Start-Job -ScriptBlock {
+            param ($logQueue)
+
+            # Check if PSFramework's Write-PSFMessage is available
+            $psfMessageAvailable = Get-Command -Name Write-PSFMessage -ErrorAction SilentlyContinue
+
+            while ($true) {
+                if ($logQueue.TryDequeue([ref]$logItem)) {
+                    if ($psfMessageAvailable) {
+                        # If PSFramework is available, use Write-PSFMessage
+                        Write-PSFMessage -Level $logItem.Level -Message $logItem.Message -FunctionName $logItem.FunctionName
+                    }
+                    else {
+                        # Fallback to Write-Host if PSFramework is not available
+                        $logColor = switch ($logItem.Level.ToUpper()) {
+                            'DEBUG' { 'DarkGray' }
+                            'INFO' { 'Green' }
+                            'NOTICE' { 'Cyan' }
+                            'WARNING' { 'Yellow' }
+                            'ERROR' { 'Red' }
+                            'CRITICAL' { 'Magenta' }
+                            default { 'White' }
+                        }
+                        Write-Host "[$($logItem.Level)] $($logItem.Message)" -ForegroundColor $logColor
+                    }
+                }
+                else {
+                    Start-Sleep -Milliseconds 100
+                }
+            }
+        } -ArgumentList $global:LogQueue
+    }
+}
+
+
 function Write-AADMigrationLog {
     param (
         [string]$Message,
-        [string]$Level = "INFO"
+        [string]$Level = "INFO",
+        [switch]$Async = $false  # Control whether logging should be async or not
     )
+
+    # Check if the Async switch is not set, then use the global variable if defined
+    if (-not $Async) {
+        $Async = $global:LOG_ASYNC
+    }
 
     # Get the PowerShell call stack to determine the actual calling function
     $callStack = Get-PSCallStack
@@ -29,21 +80,35 @@ function Write-AADMigrationLog {
     # Prepare the formatted message with the actual calling function information
     $formattedMessage = "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] [$Level] [$callerFunction] $Message"
 
-    # Display the log message based on the log level using Write-Host
-    switch ($Level.ToUpper()) {
-        "DEBUG" { Write-Host $formattedMessage -ForegroundColor DarkGray }
-        "INFO" { Write-Host $formattedMessage -ForegroundColor Green }
-        "NOTICE" { Write-Host $formattedMessage -ForegroundColor Cyan }
-        "WARNING" { Write-Host $formattedMessage -ForegroundColor Yellow }
-        "ERROR" { Write-Host $formattedMessage -ForegroundColor Red }
-        "CRITICAL" { Write-Host $formattedMessage -ForegroundColor Magenta }
-        default { Write-Host $formattedMessage -ForegroundColor White }
+    if ($Async) {
+        # Enqueue the log message for async processing
+        $logItem = [PSCustomObject]@{
+            Level        = $Level
+            Message      = $formattedMessage
+            FunctionName = $callerFunction
+        }
+        $global:LogQueue.Enqueue($logItem)
     }
+    else {
+        # Display the log message based on the log level using Write-Host
+        switch ($Level.ToUpper()) {
+            "DEBUG" { Write-Host $formattedMessage -ForegroundColor DarkGray }
+            "INFO" { Write-Host $formattedMessage -ForegroundColor Green }
+            "NOTICE" { Write-Host $formattedMessage -ForegroundColor Cyan }
+            "WARNING" { Write-Host $formattedMessage -ForegroundColor Yellow }
+            "ERROR" { Write-Host $formattedMessage -ForegroundColor Red }
+            "CRITICAL" { Write-Host $formattedMessage -ForegroundColor Magenta }
+            default { Write-Host $formattedMessage -ForegroundColor White }
+        }
 
-    # Append to log file
-    $logFilePath = [System.IO.Path]::Combine($env:TEMP, 'setupAADMigration.log')
-    $formattedMessage | Out-File -FilePath $logFilePath -Append -Encoding utf8
+        # Append to log file synchronously
+        $logFilePath = [System.IO.Path]::Combine($env:TEMP, 'setupAADMigration.log')
+        $formattedMessage | Out-File -FilePath $logFilePath -Append -Encoding utf8
+    }
 }
+
+
+
 
 
 # Toggle based on the environment mode
@@ -94,6 +159,32 @@ $moduleStarterParams = @{
 Invoke-ModuleStarter @moduleStarterParams
 
 #endregion FIRING UP MODULE STARTER
+
+
+
+# $global:LOG_ASYNC = $true
+
+# # Check if async logging is enabled
+# if ($global:LOG_ASYNC) {
+#     # Initialize the global log queue and start the async logging job
+#     if (-not $global:LogQueue) {
+#         $global:LogQueue = [System.Collections.Concurrent.ConcurrentQueue[PSCustomObject]]::new()
+
+#         $global:LogJob = Start-Job -ScriptBlock {
+#             param ($logQueue)
+
+#             while ($true) {
+#                 if ($logQueue.TryDequeue([ref]$logItem)) {
+#                     Write-PSFMessage -Level $logItem.Level -Message $logItem.Message -FunctionName $logItem.FunctionName
+#                 }
+#                 else {
+#                     Start-Sleep -Milliseconds 100
+#                 }
+#             }
+#         } -ArgumentList $global:LogQueue
+#     }
+# }
+
 
 
 #region Cleaning up Logs
@@ -410,7 +501,26 @@ try {
 
 
     # First, securely prompt for the GitHub Personal Access Token (PAT)
+    # $SecurePAT = Read-Host -AsSecureString "Please enter your GitHub Personal Access Token (PAT)"
+
+
+    # Ensure C:\temp exists
+    $secureFilePath = "C:\temp\SecurePAT.txt"
+    if (-not (Test-Path "C:\temp")) {
+        New-Item -Path "C:\temp" -ItemType Directory
+    }
+
+    # Securely prompt for the GitHub Personal Access Token (PAT)
     $SecurePAT = Read-Host -AsSecureString "Please enter your GitHub Personal Access Token (PAT)"
+
+    # Convert the SecureString to an encrypted string and store it in a file
+    $SecurePAT | ConvertFrom-SecureString | Set-Content -Path $secureFilePath
+
+    Write-EnhancedLog -Message "Your secure PAT has been saved to $secureFilePath"
+
+
+
+    # Wait-Debugger
 
     # Define the splatted parameters
     $params = @{
