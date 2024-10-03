@@ -446,7 +446,16 @@ try {
     #################################################################################################
 
 
-    Manage-UserSessions
+    # Main execution
+    try {
+        Write-EnhancedLog -Message "Script execution started" -Level "NOTICE"
+        Manage-UserSessions
+    } catch {
+        Handle-Error -ErrorRecord $_
+    } finally {
+        Write-EnhancedLog -Message "Script execution finished" -Level "NOTICE"
+    }
+
 
     # Wait-Debugger
 
