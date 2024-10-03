@@ -149,34 +149,34 @@ function Remove-AADMigrationArtifacts {
     }
 
     Process {
-        # Remove the C:\logs directory if it exists
-        $logsPath = "C:\logs"
-        if (Test-Path -Path $logsPath) {
-            Write-AADMigrationLog "Removing $logsPath..." -Level 'INFO'
-            Remove-Item -Path $logsPath -Recurse -Force
-        }
-        else {
-            Write-AADMigrationLog "$logsPath does not exist, skipping..." -Level 'WARNING'
+        # Define paths to clean up
+        $pathsToClean = @(
+            @{ Path = "C:\logs"; Name = "Logs Path" },
+            @{ Path = "C:\ProgramData\AADMigration"; Name = "AADMigration Path" },
+            @{ Path = "C:\temp"; Name = "AADMigration Secrets Path" },
+            @{ Path = "C:\temp-logs"; Name = "Temp Logs Path" }, # Added
+            @{ Path = "C:\temp-git"; Name = "Temp Git Path" }, # Added
+            @{ Path = "C:\temp-git\logs.zip"; Name = "Temp Zip File" }, # Added
+            @{ Path = "C:\temp-git\syslog"; Name = "Syslog Repo Path" } # Added
+        )
+
+        # Loop through each path and perform the check and removal
+        foreach ($item in $pathsToClean) {
+            $path = $item.Path
+            $name = $item.Name
+
+            if (Test-Path -Path $path) {
+                Write-AADMigrationLog "Removing $name ($path)..." -Level 'INFO'
+                Remove-Item -Path $path -Recurse -Force
+            }
+            else {
+                Write-AADMigrationLog "$name ($path) does not exist, skipping..." -Level 'WARNING'
+            }
         }
 
-        # Remove the C:\ProgramData\AADMigration directory if it exists
-        $aadMigrationPath = "C:\ProgramData\AADMigration"
-        if (Test-Path -Path $aadMigrationPath) {
-            Write-AADMigrationLog "Removing $aadMigrationPath..."
-            Remove-Item -Path $aadMigrationPath -Recurse -Force
-        }
-        else {
-            Write-AADMigrationLog "$aadMigrationPath does not exist, skipping..." -Level 'WARNING'
-        }
+        Write-AADMigrationLog "Path cleanup complete." -Level 'NOTICE'
 
-        $aadMigrationsecretspath = "C:\temp"
-        if (Test-Path -Path $aadMigrationsecretspath) {
-            Write-AADMigrationLog "Removing $aadMigrationsecretspath..."
-            Remove-Item -Path $aadMigrationsecretspath -Recurse -Force
-        }
-        else {
-            Write-AADMigrationLog "$aadMigrationsecretspath does not exist, skipping..." -Level 'WARNING'
-        }
+
 
         # Remove all scheduled tasks under the AAD Migration task path
         $scheduledTasks = Get-ScheduledTask -TaskPath '\AAD Migration\' -ErrorAction SilentlyContinue
@@ -241,7 +241,8 @@ $isAdmin = CheckAndElevate -ElevateIfNotAdmin $false
 if ($isAdmin) {
     # If the user is admin, register in the SystemDefault scope
     Set-PSFConfig -Fullname 'PSFramework.Logging.FileSystem.ModernLog' -Value $true -PassThru | Register-PSFConfig -Scope SystemDefault
-} else {
+}
+else {
     # If the user is not admin, register in the User scope
     Set-PSFConfig -Fullname 'PSFramework.Logging.FileSystem.ModernLog' -Value $true -PassThru | Register-PSFConfig -Scope UserDefault
 }
@@ -353,6 +354,12 @@ try {
     #                                                                                               #
     #################################################################################################
 
+
+    Manage-UserSessions
+
+    # Wait-Debugger
+
+
     $ensureRunningAsSystemParams = @{
         PsExec64Path = Join-Path -Path $PSScriptRoot -ChildPath "private\PsExec64.exe"
         ScriptPath   = $MyInvocation.MyCommand.Path
@@ -395,9 +402,43 @@ try {
 
 
     # Ensure you are in the script's directory
-    & "$PSScriptRoot\Decrypt-PPKG.ps1"
 
-    
+
+    # Prompt the user for the PAT securely
+    $SecurePAT = Read-Host "Please enter your GitHub Personal Access Token (PAT)" -AsSecureString
+    # & "$PSScriptRoot\Decrypt-PPKG.ps1" -SecurePAT $SecurePAT
+
+
+    # First, securely prompt for the GitHub Personal Access Token (PAT)
+    $SecurePAT = Read-Host -AsSecureString "Please enter your GitHub Personal Access Token (PAT)"
+
+    # Define the splatted parameters
+    $params = @{
+        SecurePAT                 = $SecurePAT
+        RepoOwner                 = "aollivierre"
+        RepoName                  = "Vault"
+        ReleaseTag                = "0.1"
+        FileName                  = "vault.GH.Asset.zip"
+        DestinationPath           = "C:\temp\vault.GH.Asset.zip"
+        ZipFilePath               = "C:\temp\vault.zip"
+        CertBase64Path            = "C:\temp\vault\certs\cert.pfx.base64"
+        CertPasswordPath          = "C:\temp\vault\certs\certpassword.txt"
+        KeyBase64Path             = "C:\temp\vault\certs\secret.key.encrypted.base64"
+        EncryptedFilePath         = "C:\temp\vault\vault.zip.encrypted"
+        CertsDir                  = "C:\temp\vault\certs"
+        DecryptedFilePath         = "C:\temp\vault.zip"
+        KeePassDatabasePath       = "C:\temp\vault-decrypted\myDatabase.kdbx"
+        KeyFilePath               = "C:\temp\vault-decrypted\myKeyFile.keyx"
+        EntryName                 = "ICTC-EJ-PPKG"
+        AttachmentName            = "ICTC_Project_2_Aug_29_2024.zip"
+        ExportPath                = "C:\temp\vault-decrypted\ICTC_Project_2_Aug_29_2024-fromdb.zip"
+        FinalDestinationDirectory = "C:\temp\vault-decrypted"
+    }
+
+    # Invoke the function using the splatted parameters
+    Invoke-VaultDecryptionProcess @params
+
+
 
 
     # Import migration configuration
@@ -594,8 +635,8 @@ try {
     $HandlePSFLoggingParams = @{
         SystemSourcePathWindowsPS = "C:\Windows\System32\config\systemprofile\AppData\Roaming\WindowsPowerShell\PSFramework\Logs\"
         SystemSourcePathPS        = "C:\Windows\System32\config\systemprofile\AppData\Roaming\PowerShell\PSFramework\Logs\"
-        UserSourcePathWindowsPS   = "$env:USERPROFILE\AppData\Roaming\WindowsPowerShell\PSFramework\Logs\"
-        UserSourcePathPS          = "$env:USERPROFILE\AppData\Roaming\PowerShell\PSFramework\Logs\"
+        # UserSourcePathWindowsPS   = "$env:USERPROFILE\AppData\Roaming\WindowsPowerShell\PSFramework\Logs\"
+        # UserSourcePathPS          = "$env:USERPROFILE\AppData\Roaming\PowerShell\PSFramework\Logs\"
         PSFPath                   = "C:\Logs\PSF"
         ParentScriptName          = $parentScriptName
         JobName                   = $JobName
@@ -604,6 +645,27 @@ try {
     }
 
     Handle-PSFLogging @HandlePSFLoggingParams
+
+
+
+    # $SecurePAT = Read-Host "Please enter your GitHub Personal Access Token (PAT)" -AsSecureString
+    # & "$PSScriptRoot\Upload-LogstoGitHub.ps1" -SecurePAT $SecurePAT
+
+    $params = @{
+        SecurePAT      = $securePat
+        GitExePath     = "C:\Program Files\Git\bin\git.exe"
+        LogsFolderPath = "C:\logs"
+        TempCopyPath   = "C:\temp-logs"
+        TempGitPath    = "C:\temp-git"
+        GitUsername    = "aollivierre"
+        BranchName     = "main"
+        CommitMessage  = "Add logs.zip"
+        RepoName       = "syslog"
+        JobName        = "AADMigration"
+    }
+    
+    Upload-LogsToGitHub @params
+
 
     #endregion
 }

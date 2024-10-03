@@ -1,9 +1,11 @@
-
+param (
+    [SecureString]$SecurePAT
+)
 
 $global:mode = $env:EnvironmentMode
 # $global:mode = 'dev'
 
-function Write-DecryptionLog {
+function Write-LogsUploadGitHub {
     param (
         [string]$Message,
         [string]$Level = "INFO"
@@ -28,23 +30,22 @@ function Write-DecryptionLog {
     }
 
     # Append to log file
-    $logFilePath = [System.IO.Path]::Combine($env:TEMP, 'decryption.log')
+    $logFilePath = [System.IO.Path]::Combine($env:TEMP, 'logsupload.log')
     $formattedMessage | Out-File -FilePath $logFilePath -Append -Encoding utf8
 }
-
 
 # Toggle based on the environment mode
 switch ($global:mode) {
     'dev' {
-        Write-DecryptionLog "Running in development mode" -Level 'Warning'
+        Write-LogsUploadGitHub "Running in development mode" -Level 'Warning'
         # Your development logic here
     }
     'prod' {
-        Write-DecryptionLog "Running in production mode" -Level 'INFO'
+        Write-LogsUploadGitHub "Running in production mode" -Level 'INFO'
         # Your production logic here
     }
     default {
-        Write-DecryptionLog "Unknown mode. Defaulting to production." -Level 'ERROR'
+        Write-LogsUploadGitHub "Unknown mode. Defaulting to production." -Level 'ERROR'
         # Default to production
     }
 }
@@ -110,7 +111,7 @@ switch ($global:mode) {
 Set-PSFConfig -Fullname 'PSFramework.Logging.FileSystem.ModernLog' -Value $true -PassThru | Register-PSFConfig -Scope SystemDefault
 
 # Define the base logs path and job name
-$JobName = "secrets_decryption"
+$JobName = "Logs_GitHubUpload"
 $parentScriptName = Get-ParentScriptName
 Write-EnhancedLog -Message "Parent Script Name: $parentScriptName"
 
@@ -181,12 +182,12 @@ catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
     if ($transcriptPath) {
         Stop-Transcript
-        Write-DecryptionLog "Transcript stopped." -Level 'WARNING'
+        Write-LogsUploadGitHub "Transcript stopped." -Level 'WARNING'
         # Stop logging in the finally block
 
     }
     else {
-        Write-DecryptionLog "Transcript was not started due to an earlier error." -Level 'ERROR'
+        Write-LogsUploadGitHub "Transcript was not started due to an earlier error." -Level 'ERROR'
     }
 
     # Stop PSF Logging
@@ -215,113 +216,248 @@ try {
 
 
 
+    $ptr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePAT)
+    $pat = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
 
-    # Step1: 
+
+
+    $params = @{
+        MinVersion   = [version]"2.46.0"
+        RegistryPath = "HKLM:\SOFTWARE\GitForWindows"
+        ExePath      = "C:\Program Files\Git\bin\git.exe"
+    }
+    Ensure-GitIsInstalled @params
+
+    # Wait-Debugger
+
+    # Define paths and variables
+    $logsFolderPath = "C:\logs"
+    $tempCopyPath = "C:\temp-logs"
+    $tempGitPath = "C:\temp-git"
+    $tempZipFile = Join-Path -Path $tempGitPath -ChildPath "logs.zip"
+    $repoPath = "C:\temp-git\syslog"
+    $gitExePath = "C:\Program Files\Git\bin\git.exe" # Adjust if needed
+    $gitUsername = "aollivierre" # Your GitHub username
+    $personalAccessToken = $pat # Your GitHub PAT
+    $repoUrlsanitized = "https://github.com/$gitUsername/syslog.git"
+    $repoUrl = "https://{0}:{1}@github.com/{2}/syslog.git" -f $gitUsername, $personalAccessToken, $gitUsername
+    $commitMessage = "Add logs.zip"
+    $branchName = "main" # Change if you're using a different branch name
+
+
+
+
+    # Assuming Test-RunningAsSystem is defined and available for use
+
+  
+
+
+
+
+
+    # Remove tempGitPath if it exists
+    if (Test-Path -Path $tempGitPath) {
+        Write-LogsUploadGitHub -Message "Removing $tempGitPath..."
+        Remove-Item -Path $tempGitPath -Recurse -Force
+    }
+    else {
+        Write-LogsUploadGitHub -Message "$tempGitPath does not exist, skipping removal."
+    }
+
+
+    # Ensure the temp directory exists
+    if (-Not (Test-Path -Path $tempGitPath)) {
+        New-Item -Path $tempGitPath -ItemType Directory | Out-Null
+    }
+
+
+    # Remove-Item -Path $tempGitPath -Recurse -Force
+
+    # Zip the logs folder to the temp location
+    Write-LogsUploadGitHub -Message "Zipping the logs folder..."
+
+
+    # Remove tempCopyPath if it exists
+    if (Test-Path -Path $tempCopyPath) {
+        Write-LogsUploadGitHub -Message "Removing $tempCopyPath..."
+        Remove-Item -Path $tempCopyPath -Recurse -Force
+    }
+    else {
+        Write-LogsUploadGitHub -Message "$tempCopyPath does not exist, skipping removal."
+    }
+
+
+    # Ensure the destination directory exists
+    if (-not (Test-Path -Path $tempCopyPath)) {
+        New-Item -Path $tempCopyPath -ItemType Directory
+    }
+
+    # Use the Copy-FilesWithRobocopy function to copy files
+    Copy-FilesWithRobocopy -Source $logsFolderPath -Destination $tempCopyPath -FilePattern '*' -Exclude ".git"
+
+    # Wait-Debugger
+
+    # Compress the copied files
+    # Compress-Archive -Path $tempCopyPath -DestinationPath $tempZipFile -Force
+
+    $params = @{
+        SourceDirectory = $tempCopyPath
+        ZipFilePath     = $tempZipFile
+    }
+    Zip-Directory @params
+
+
+    # Wait-Debugger
+
+    # Cleanup the temporary copy
+
+    # Remove tempCopyPath if it exists
+    if (Test-Path -Path $tempCopyPath) {
+        Write-LogsUploadGitHub -Message "Removing $tempCopyPath..."
+        Remove-Item -Path $tempCopyPath -Recurse -Force
+    }
+    else {
+        Write-LogsUploadGitHub -Message "$tempCopyPath does not exist, skipping removal."
+    }
+
+
+
+    # Check if the zip file was created
+    if (-Not (Test-Path -Path $tempZipFile)) {
+        Write-LogsUploadGitHub -Message "Failed to zip the logs folder." -ForegroundColor Red
+        exit 1
+    }
+
+    Set-Location -Path $tempGitPath
+
+    # Clone the repo if it doesn't exist
+    if (-Not (Test-Path -Path $repoPath)) {
+        Write-LogsUploadGitHub -Message "Cloning repository from $repoUrlsanitized..."
+        & "$gitExePath" clone $repoUrl
+
+        # Initialize a new git repository
+        # & "$gitExePath" init
+
+        # Add the remote repository
+        # & "$gitExePath" remote add origin $repoUrl
+
+    }
+
+    # Wait-Debugger
+
 
 
  
-    # Prompt the user for the PAT securely
-    $patSecure = Read-Host "Please enter your GitHub Personal Access Token (PAT)" -AsSecureString
-
-    # Convert the secure string (encrypted) to plain text
-    $ptr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($patSecure)
-    $pat = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
-
-    # Define parameters including the user-provided PAT
-    $params = @{
-        Token           = $pat  # The PAT entered by the user
-        RepoOwner       = "aollivierre"
-        RepoName        = "Vault"
-        ReleaseTag      = "0.1"
-        FileName        = "vault.GH.Asset.zip"
-        DestinationPath = "C:\temp\vault.GH.Asset.zip"
-    }
-
-    # Call the Download-GitHubReleaseAsset function with splatted parameters
-    Download-GitHubReleaseAsset @params
-
-    # Clear the PAT variable for security reasons after use
-    $pat = $null
-
-    
-
-
-    $params = @{
-        ZipFilePath          = "C:\temp\vault.GH.Asset.zip"
-        DestinationDirectory = "C:\temp\vault"
-    }
-    Unzip-Directory @params
-
-
-    # Wait-Debugger
-
-
-
-    # Step1: Decrypt using the Hybrid AES + RSA (Cert) mode
   
 
-    # Define the parameters for the Decrypt-FileWithCert function using splatting
-    $params = @{
 
-        # Path to the Base64-encoded certificate file.
-        # This file should contain the Base64-encoded contents of the .pfx certificate that you want to use for decryption.
-        CertBase64Path    = "C:\temp\vault\certs\cert.pfx.base64"
 
-        # Path to the text file that contains the password for the .pfx certificate.
-        # This is the password that will be used to unlock the certificate and access the private key.
-        CertPasswordPath  = "C:\temp\vault\certs\certpassword.txt"
 
-        # Path to the Base64-encoded AES key file.
-        # This file contains the encrypted AES key that will be used to decrypt the target file.
-        KeyBase64Path     = "C:\temp\vault\certs\secret.key.encrypted.base64"
 
-        # Path to the file that is encrypted and needs to be decrypted.
-        # This is the target file that was encrypted using the AES key, and it will be decrypted using the AES key and IV.
-        EncryptedFilePath = "C:\temp\vault\vault.zip.encrypted"
+    #Region Creating the Destination Folder inside the Repo Folder
+    # Get the computer name
+    $computerName = $env:COMPUTERNAME
+    # $destFolder = Join-Path -Path $repoPath -ChildPath "$computerName-$currentDate"
+    # Define the folder for the computer name
+    $computerNameFolder = Join-Path -Path $repoPath -ChildPath "$computerName"
 
-        # Path where the decrypted file will be saved after decryption.
-        # This is the output path where the function will store the decrypted version of the file.
-        DecryptedFilePath = "C:\temp\vault.zip"
+    # Define the folder for the date inside the computer name folder
+    $currentDate = Get-Date -Format "yyyy-MM-dd"
+    $dateFolder = Join-Path -Path $computerNameFolder -ChildPath "$currentDate"
 
-        # Directory where temporary files such as the certificate and the AES key will be stored during the process.
-        # This is a working directory where the function can safely write temporary files during the decryption.
-        CertsDir          = "C:\temp\vault\certs"
+    # Get the current time and format it like 7-08-AM or 7-08-PM
+    $currentTime = Get-Date -Format "h-mm-tt" # Example: 7-08-AM
+    $timeFolder = Join-Path -Path $dateFolder -ChildPath "$currentTime"
+
+    # Define the job name folder inside the timestamp folder
+    $jobname = 'AADMigration'
+    $jobFolder = Join-Path -Path $timeFolder -ChildPath "$jobname"
+
+    # Ensure the computer name folder exists
+    if (-Not (Test-Path -Path $computerNameFolder)) {
+        New-Item -Path $computerNameFolder -ItemType Directory | Out-Null
     }
 
-    # Call the Decrypt-FileWithCert function and pass the parameters via splatting.
-    # This function will use the provided certificate, key, and encrypted file to perform the decryption and save the decrypted file.
-    Decrypt-FileWithCert @params
+    # Ensure the date folder exists
+    if (-Not (Test-Path -Path $dateFolder)) {
+        New-Item -Path $dateFolder -ItemType Directory | Out-Null
+    }
 
+    # Ensure the time folder exists inside the date folder
+    if (-Not (Test-Path -Path $timeFolder)) {
+        New-Item -Path $timeFolder -ItemType Directory | Out-Null
+    }
+
+    # Ensure the job name folder exists inside the time folder
+    if (-Not (Test-Path -Path $jobFolder)) {
+        New-Item -Path $jobFolder -ItemType Directory | Out-Null
+    }
+
+    # Now, $jobFolder is the destination folder
+    $destFolder = $jobFolder
 
     # Wait-Debugger
 
-    #Step 2: Unzip the directory
+    #endregion Creating the Destination Folder inside the Repo Folder
 
 
-    $params = @{
-        ZipFilePath          = "C:\temp\vault.zip"
-        DestinationDirectory = "C:\temp\vault-decrypted"
+
+
+    # Create the folder named after the computer name, date, time and joba name
+    # if (-Not (Test-Path -Path $destFolder)) {
+    #     New-Item -Path $destFolder -ItemType Directory | Out-Null
+    # }
+
+    # Copy the zipped log file to the repository folder
+    Copy-Item -Path $tempZipFile -Destination $destFolder -Force
+
+    # Change to the repo directory
+    # Set-Location -Path $repoPath
+
+
+    Set-Location -Path $repoPath
+
+    # Check if running as SYSTEM account
+    $isSystem = Test-RunningAsSystem
+
+    if ($isSystem) {
+        # Running as SYSTEM: Set local Git user identity for system commits
+        & "$gitExePath" config user.email "system@example.com"
+        & "$gitExePath" config user.name "System User"
+        Write-EnhancedLog -Message "Configured Git identity for SYSTEM account." -Level "INFO"
     }
-    Unzip-Directory @params
-
-
-    $exportAttachmentParams = @{
-        DatabasePath   = "C:\temp\vault-decrypted\myDatabase.kdbx"
-        KeyFilePath    = "C:\temp\vault-decrypted\myKeyFile.keyx"
-        EntryName      = "ICTC-EJ-PPKG"
-        AttachmentName = "ICTC_Project_2_Aug_29_2024.zip"
-        ExportPath     = "C:\temp\vault-decrypted\ICTC_Project_2_Aug_29_2024-fromdb.zip"
+    else {
+        # Not running as SYSTEM: Set local Git user identity for the current logged in user
+        $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+        $currentUserEmail = "$($currentUser.Replace('\', '_'))@example.com"  # Example: Format the email based on user name
+  
+        & "$gitExePath" config user.email $currentUserEmail
+        & "$gitExePath" config user.name $currentUser
+        Write-EnhancedLog -Message "Configured Git identity for user: $currentUser." -Level "INFO"
     }
-    Export-KeePassAttachment @exportAttachmentParams
+  
+    Write-EnhancedLog -Message "Git user identity configuration complete." -Level "NOTICE"
 
 
 
 
-    $params = @{
-        ZipFilePath          = "C:\temp\vault-decrypted\ICTC_Project_2_Aug_29_2024-fromdb.zip"
-        DestinationDirectory = "C:\temp\vault-decrypted"
-    }
-    Unzip-Directory @params
+    # Add, commit, and push the zipped log file
+    & "$gitExePath" add *
+    & "$gitExePath" commit -m "$commitMessage from $computerName on $currentDate"
+    & "$gitExePath" push origin $branchName
+
+    Write-LogsUploadGitHub -Message "Zipped log file copied to $destFolder and pushed to the repository." -ForegroundColor Green
+
+
+    # Change to a location outside the $tempGitPath directory before deleting it
+    Set-Location -Path "C:\" # Change to any path that is not inside $tempGitPath
+
+    # Clean up the temp directory
+    Write-LogsUploadGitHub -Message "Cleaning up the temp $tempGitPath directory..."
+    Remove-Item -Path $tempGitPath -Recurse -Force
+
+    Write-LogsUploadGitHub -Message "Process completed and temp $tempGitPath directory cleaned up." -ForegroundColor Green
+
 
 
     #endregion Script Logic
@@ -330,7 +466,7 @@ catch {
     Write-EnhancedLog -Message "An error occurred during script execution: $_" -Level 'ERROR'
     if ($transcriptPath) {
         Stop-Transcript
-        Write-DecryptionLog "Transcript stopped." -Level 'WARNING'
+        Write-LogsUploadGitHub "Transcript stopped." -Level 'WARNING'
         # Stop logging in the finally block
     }
 
@@ -349,12 +485,12 @@ finally {
     # Ensure that the transcript is stopped even if an error occurs
     if ($transcriptPath) {
         Stop-Transcript
-        Write-DecryptionLog "Transcript stopped." -Level 'WARNING'
+        Write-LogsUploadGitHub "Transcript stopped." -Level 'WARNING'
         # Stop logging in the finally block
 
     }
     else {
-        Write-DecryptionLog "Transcript was not started due to an earlier error." -Level 'ERROR'
+        Write-LogsUploadGitHub "Transcript was not started due to an earlier error." -Level 'ERROR'
     }
     
     # Ensure the log is written before proceeding
