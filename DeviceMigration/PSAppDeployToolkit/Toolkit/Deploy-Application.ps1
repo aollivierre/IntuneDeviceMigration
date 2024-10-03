@@ -206,14 +206,14 @@ Try {
 		#################################################################################################
 		
 		# Define a hashtable for splatting
-		$moduleStarterParams = @{
-			Mode                   = $mode
-			SkipPSGalleryModules   = $true
-			SkipCheckandElevate    = $true
-			SkipPowerShell7Install = $true
-			SkipEnhancedModules    = $true
-			SkipGitRepos           = $true
-		}
+		# $moduleStarterParams = @{
+		# 	Mode                   = $mode
+		# 	SkipPSGalleryModules   = $true
+		# 	SkipCheckandElevate    = $true
+		# 	SkipPowerShell7Install = $true
+		# 	SkipEnhancedModules    = $true
+		# 	SkipGitRepos           = $true
+		# }
 		
 		# Call the function using the splat
 		# Invoke-ModuleStarter @moduleStarterParams
@@ -229,7 +229,20 @@ Try {
 		#                            HANDLE PSF MODERN LOGGING                                          #
 		#                                                                                               #
 		#################################################################################################
-		Set-PSFConfig -Fullname 'PSFramework.Logging.FileSystem.ModernLog' -Value $true -PassThru | Register-PSFConfig -Scope SystemDefault
+		# Set-PSFConfig -Fullname 'PSFramework.Logging.FileSystem.ModernLog' -Value $true -PassThru | Register-PSFConfig -Scope SystemDefault
+
+		# Check if the current user is an administrator
+		$isAdmin = CheckAndElevate -ElevateIfNotAdmin $false
+
+		# Set the configuration and register it with the appropriate scope based on admin privileges
+		if ($isAdmin) {
+			# If the user is admin, register in the SystemDefault scope
+			Set-PSFConfig -Fullname 'PSFramework.Logging.FileSystem.ModernLog' -Value $true -PassThru | Register-PSFConfig -Scope SystemDefault
+		}
+		else {
+			# If the user is not admin, register in the User scope
+			Set-PSFConfig -Fullname 'PSFramework.Logging.FileSystem.ModernLog' -Value $true -PassThru | Register-PSFConfig -Scope UserDefault
+		}
 
 		# Define the base logs path and job name
 		$JobName = "AAD_Migration"
@@ -498,6 +511,14 @@ Try {
 			TaskPath = "\AAD Migration\"
 		}
 		Disable-ScheduledTaskByPath @DisableScheduledTaskByPath
+
+		
+
+		Show-InstallationProgress -Status 'Uploading logs to GitHub'
+
+		
+		
+
 
 		Show-InstallationProgress -Status 'Computer has left the domain and will reboot now to start Entra Join (Phase 1)'
 
