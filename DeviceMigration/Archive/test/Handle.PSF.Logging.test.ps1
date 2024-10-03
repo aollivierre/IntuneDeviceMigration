@@ -19,7 +19,7 @@ Invoke-ModuleStarter @moduleStarterParams
 
 $JobName = "AAD_Migration"
 $parentScriptName = Get-ParentScriptName
-Write-AADMigrationLog "Parent Script Name: $parentScriptName"
+Write-EnhancedLog -Message "Parent Script Name: $parentScriptName"
 
 $HandlePSFLoggingParams = @{
     SystemSourcePathWindowsPS = "C:\Windows\System32\config\systemprofile\AppData\Roaming\WindowsPowerShell\PSFramework\Logs\"
