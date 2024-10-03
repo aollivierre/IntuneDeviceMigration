@@ -405,7 +405,7 @@ try {
 
 
     # Prompt the user for the PAT securely
-    $SecurePAT = Read-Host "Please enter your GitHub Personal Access Token (PAT)" -AsSecureString
+    # $SecurePAT = Read-Host "Please enter your GitHub Personal Access Token (PAT)" -AsSecureString
     # & "$PSScriptRoot\Decrypt-PPKG.ps1" -SecurePAT $SecurePAT
 
 
