@@ -4,7 +4,7 @@
 
 # Set environment variable globally for all users
 
-$global:mode = 'prod'
+$global:mode = 'dev'
 
 [System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'Machine')
 [System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'process')
@@ -511,7 +511,19 @@ try {
     }
 
     # Securely prompt for the GitHub Personal Access Token (PAT)
-    $SecurePAT = Read-Host -AsSecureString "Please enter your GitHub Personal Access Token (PAT)"
+    # $SecurePAT = Read-Host -AsSecureString "Please enter your GitHub Personal Access Token (PAT)"
+
+    $SecurePAT = Get-GitHubPAT
+
+    if ($null -ne $SecurePAT) {
+        # Continue with the secure PAT
+        Write-EnhancedLog -Message "Using the captured PAT..."
+        # Further logic here
+    }
+    else {
+        Write-EnhancedLog -Message "No PAT was captured."
+    }
+
 
     # Convert the SecureString to an encrypted string and store it in a file
     $SecurePAT | ConvertFrom-SecureString | Set-Content -Path $secureFilePath

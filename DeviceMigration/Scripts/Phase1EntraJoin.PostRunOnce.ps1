@@ -140,28 +140,49 @@ try {
     PostRunOnce-Phase1EntraJoin @PostRunOncePhase1EntraJoinParams
     #endregion
     
-    #region HANDLE PSF LOGGING
+      #region HANDLE PSF LOGGING
     #################################################################################################
     #                                                                                               #
     #                                 HANDLE PSF LOGGING                                            #
     #                                                                                               #
     #################################################################################################
-    # $parentScriptName = Get-ParentScriptName
-    # Write-Host "Parent Script Name: $parentScriptName"
+    $parentScriptName = Get-ParentScriptName
+    Write-AADMigrationLog "Parent Script Name: $parentScriptName"
 
-    # $HandlePSFLoggingParams = @{
-    #     SystemSourcePathWindowsPS = "C:\Windows\System32\config\systemprofile\AppData\Roaming\WindowsPowerShell\PSFramework\Logs\"
-    #     SystemSourcePathPS        = "C:\Windows\System32\config\systemprofile\AppData\Roaming\PowerShell\PSFramework\Logs\"
-    #     UserSourcePathWindowsPS   = "$env:USERPROFILE\AppData\Roaming\WindowsPowerShell\PSFramework\Logs\"
-    #     UserSourcePathPS          = "$env:USERPROFILE\AppData\Roaming\PowerShell\PSFramework\Logs\"
-    #     PSFPath                   = "C:\Logs\PSF"
-    #     ParentScriptName          = $parentScriptName
-    #     JobName                   = $JobName
-    #     SkipSYSTEMLogCopy         = $True
-    #     SkipSYSTEMLogRemoval      = $True
-    # }
+    $HandlePSFLoggingParams = @{
+        SystemSourcePathWindowsPS = "C:\Windows\System32\config\systemprofile\AppData\Roaming\WindowsPowerShell\PSFramework\Logs\"
+        SystemSourcePathPS        = "C:\Windows\System32\config\systemprofile\AppData\Roaming\PowerShell\PSFramework\Logs\"
+        # UserSourcePathWindowsPS   = "$env:USERPROFILE\AppData\Roaming\WindowsPowerShell\PSFramework\Logs\"
+        # UserSourcePathPS          = "$env:USERPROFILE\AppData\Roaming\PowerShell\PSFramework\Logs\"
+        PSFPath                   = "C:\Logs\PSF"
+        ParentScriptName          = $parentScriptName
+        JobName                   = $JobName
+        SkipSYSTEMLogCopy         = $false
+        SkipSYSTEMLogRemoval      = $false
+    }
 
-    # Handle-PSFLogging @HandlePSFLoggingParams
+    Handle-PSFLogging @HandlePSFLoggingParams
+
+
+
+    # $SecurePAT = Read-Host "Please enter your GitHub Personal Access Token (PAT)" -AsSecureString
+    # & "$PSScriptRoot\Upload-LogstoGitHub.ps1" -SecurePAT $SecurePAT
+
+    $params = @{
+        SecurePAT      = $securePat
+        GitExePath     = "C:\Program Files\Git\bin\git.exe"
+        LogsFolderPath = "C:\logs"
+        TempCopyPath   = "C:\temp-logs"
+        TempGitPath    = "C:\temp-git"
+        GitUsername    = "aollivierre"
+        BranchName     = "main"
+        CommitMessage  = "Add logs.zip"
+        RepoName       = "syslog"
+        JobName        = "AADMigration"
+    }
+    
+    Upload-LogsToGitHub @params
+
     #endregion
 }
 catch {

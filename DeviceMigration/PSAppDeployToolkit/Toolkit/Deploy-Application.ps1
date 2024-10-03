@@ -516,7 +516,6 @@ Try {
 
 		Show-InstallationProgress -Status 'Uploading logs to GitHub'
 
-		
 
 
 		# Define the path to the encrypted PAT file
