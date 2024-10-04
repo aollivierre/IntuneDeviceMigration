@@ -4,7 +4,7 @@
 
 # Set environment variable globally for all users
 
-$global:mode = 'dev'
+$global:mode = 'prod'
 
 [System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'Machine')
 [System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'process')
@@ -139,11 +139,11 @@ switch ($global:mode) {
 
 # Wait-Debugger
 
-# Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
+Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
 
 # Wait-Debugger
 
-Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
+# Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
 
 # Define a hashtable for splatting
 $moduleStarterParams = @{
