@@ -518,21 +518,43 @@ Try {
 
 
 
+	
 		# Define the path to the encrypted PAT file
 		$secureFilePath = "C:\temp\SecurePAT.txt"
 
 		# Ensure the file exists before attempting to read it
 		if (-not (Test-Path $secureFilePath)) {
-			Write-EnhancedLog -Message"The encrypted PAT file does not exist!" -Level 'ERROR'
+			Write-EnhancedLog -Message "The encrypted PAT file does not exist!" -Level 'ERROR'
 			exit 1
 		}
 
-		# Read the encrypted PAT from the file and convert it back to a SecureString
-		$SecurePAT = Get-Content -Path $secureFilePath | ConvertTo-SecureString
 
-		# Now you can pass $SecurePAT to any function or use it as needed
-		Write-EnhancedLog -Message "Successfully retrieved the encrypted PAT"
+ 
+		# Decryption
 
+		# Read the key from the file
+		$keyString = Get-Content "C:\temp\SecureKey.txt" -Raw
+
+		# Split the key string into an array of byte values
+		$key = $keyString -split ',' | ForEach-Object { [byte]$_ }
+
+		# Read the encrypted PAT from the file
+		$EncryptedPAT = Get-Content "C:\temp\SecurePAT.txt" -Raw
+
+		# Decrypt the SecurePAT using the key
+		$SecurePAT = $EncryptedPAT | ConvertTo-SecureString -Key $key
+
+		# Convert SecurePAT to plain text
+		$ptr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePAT)
+		$PersonalAccessToken = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
+
+		# Check if it's successfully converted
+		if ($PersonalAccessToken) {
+			Write-EnhancedLog -Message "Successfully converted to plain text."
+		}
+		else {
+			Write-EnhancedLog -Message "Failed to convert the SecureString."
+		}
 
 		
 		$params = @{

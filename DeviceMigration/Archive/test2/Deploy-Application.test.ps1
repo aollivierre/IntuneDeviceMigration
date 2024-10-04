@@ -204,19 +204,20 @@ Try {
 		#                                 FIRING UP MODULE STARTER                                      #
 		#                                                                                               #
 		#################################################################################################
-		
+		Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
+
 		# Define a hashtable for splatting
-		# $moduleStarterParams = @{
-		# 	Mode                   = $mode
-		# 	SkipPSGalleryModules   = $true
-		# 	SkipCheckandElevate    = $true
-		# 	SkipPowerShell7Install = $true
-		# 	SkipEnhancedModules    = $true
-		# 	SkipGitRepos           = $true
-		# }
+		$moduleStarterParams = @{
+			Mode                   = 'dev'
+			SkipPSGalleryModules   = $true
+			SkipCheckandElevate    = $true
+			SkipPowerShell7Install = $true
+			SkipEnhancedModules    = $true
+			SkipGitRepos           = $true
+		}
 		
 		# Call the function using the splat
-		# Invoke-ModuleStarter @moduleStarterParams
+		Invoke-ModuleStarter @moduleStarterParams
 		
 		#endregion FIRING UP MODULE STARTER
 
@@ -348,117 +349,117 @@ Try {
 
 		# Configuration settings
 		# Path to the PSD1 configuration file
-		$configPath = "C:\ProgramData\AADMigration\MigrationConfig.psd1"
+		# $configPath = "C:\ProgramData\AADMigration\MigrationConfig.psd1"
 
-		# Import the configuration settings from the PSD1 file
-		$config = Import-PowerShellDataFile -Path $configPath
+		# # Import the configuration settings from the PSD1 file
+		# $config = Import-PowerShellDataFile -Path $configPath
 
-		# Access the configuration settings
-		$MigrationPath = $config.MigrationPath
-		$UseOneDriveKFM = $config.UseOneDriveKFM
-		$InstallOneDrive = $config.InstallOneDrive
-		$TenantID = $config.TenantID
-		$DeferDeadline = $config.DeferDeadline
-		$DeferTimes = $config.DeferTimes
-		$TempUser = $config.TempUser
-		$TempPass = $config.TempPass
-		$ProvisioningPack = $config.ProvisioningPack
-		$ProvisioningPackName = $config.ProvisioningPackname
+		# # Access the configuration settings
+		# $MigrationPath = $config.MigrationPath
+		# $UseOneDriveKFM = $config.UseOneDriveKFM
+		# $InstallOneDrive = $config.InstallOneDrive
+		# $TenantID = $config.TenantID
+		# $DeferDeadline = $config.DeferDeadline
+		# $DeferTimes = $config.DeferTimes
+		# $TempUser = $config.TempUser
+		# $TempPass = $config.TempPass
+		# $ProvisioningPack = $config.ProvisioningPack
+		# $ProvisioningPackName = $config.ProvisioningPackname
 
-		# Example of logging the loaded configuration
-		Write-EnhancedLog -Message "Loaded configuration from $configPath" -Level "INFO"
-		Write-EnhancedLog -Message "MigrationPath: $MigrationPath" -Level "INFO"
-		Write-EnhancedLog -Message "UseOneDriveKFM: $UseOneDriveKFM" -Level "INFO"
-		Write-EnhancedLog -Message "InstallOneDrive: $InstallOneDrive" -Level "INFO"
-		Write-EnhancedLog -Message "TenantID: $TenantID" -Level "INFO"
-		Write-EnhancedLog -Message "DeferDeadline: $DeferDeadline" -Level "INFO"
-		Write-EnhancedLog -Message "TempUser: $TempUser" -Level "INFO"
-		Write-EnhancedLog -Message "ProvisioningPack: $ProvisioningPack" -Level "INFO"
-		Write-EnhancedLog -Message "ProvisioningPackName: $ProvisioningPackName" -Level "INFO"
+		# # Example of logging the loaded configuration
+		# Write-EnhancedLog -Message "Loaded configuration from $configPath" -Level "INFO"
+		# Write-EnhancedLog -Message "MigrationPath: $MigrationPath" -Level "INFO"
+		# Write-EnhancedLog -Message "UseOneDriveKFM: $UseOneDriveKFM" -Level "INFO"
+		# Write-EnhancedLog -Message "InstallOneDrive: $InstallOneDrive" -Level "INFO"
+		# Write-EnhancedLog -Message "TenantID: $TenantID" -Level "INFO"
+		# Write-EnhancedLog -Message "DeferDeadline: $DeferDeadline" -Level "INFO"
+		# Write-EnhancedLog -Message "TempUser: $TempUser" -Level "INFO"
+		# Write-EnhancedLog -Message "ProvisioningPack: $ProvisioningPack" -Level "INFO"
+		# Write-EnhancedLog -Message "ProvisioningPackName: $ProvisioningPackName" -Level "INFO"
 
-		# Wait-Debugger
-
-
-		# Script variables
-		$DomainLeaveUser = $DomainLeaveUser
-		$DomainLeavePassword = $DomainLeavePassword
+		# # Wait-Debugger
 
 
-		Show-InstallationProgress -Status 'Analyzing OneDriveSync Util Status'
+		# # Script variables
+		# $DomainLeaveUser = $DomainLeaveUser
+		# $DomainLeavePassword = $DomainLeavePassword
 
 
-		#Region AnalyzeOneDriveSyncUtilStatusParams
-
-		If ($UseOneDriveKFM) {
-
-			# 	Write-Output "OneDriveKFM flag is set to True. Checking Sync Status before continuing."
+		# Show-InstallationProgress -Status 'Analyzing OneDriveSync Util Status'
 
 
-			$RemoveExistingStatusFilesParams = @{
-				LogFolder      = "logs"
-				StatusFileName = "ODSyncUtilStatus.json"
+		# #Region AnalyzeOneDriveSyncUtilStatusParams
+
+		# If ($UseOneDriveKFM) {
+
+		# 	# 	Write-Output "OneDriveKFM flag is set to True. Checking Sync Status before continuing."
+
+
+		# 	$RemoveExistingStatusFilesParams = @{
+		# 		LogFolder      = "logs"
+		# 		StatusFileName = "ODSyncUtilStatus.json"
         
-			}
-			# Remove existing status files
-			Remove-ExistingStatusFiles @RemoveExistingStatusFilesParams
+		# 	}
+		# 	# Remove existing status files
+		# 	Remove-ExistingStatusFiles @RemoveExistingStatusFilesParams
 
 	
-			# 	#Check the most recent OD4B Sync status. Write error to event log if not healthy and exit
-			$taskParams = @{
-				TaskPath = "AAD Migration"
-				TaskName = "AADM Get OneDrive Sync Util Status"
-			}
+		# 	# 	#Check the most recent OD4B Sync status. Write error to event log if not healthy and exit
+		# 	$taskParams = @{
+		# 		TaskPath = "AAD Migration"
+		# 		TaskName = "AADM Get OneDrive Sync Util Status"
+		# 	}
 
-			Show-InstallationProgress -Status 'Triggering Task AADM Get OneDrive Sync Util Status'
+		# 	Show-InstallationProgress -Status 'Triggering Task AADM Get OneDrive Sync Util Status'
 		
-			# Trigger OneDrive Sync Status Scheduled Task
-			Trigger-ScheduledTask @taskParams
+		# 	# Trigger OneDrive Sync Status Scheduled Task
+		# 	Trigger-ScheduledTask @taskParams
 		
 
-			# Example usage with try-catch mechanism and Write-EnhancedLog
-			$AnalyzeOneDriveSyncUtilStatusParams = @{
-				LogFolder      = "logs"
-				StatusFileName = "ODSyncUtilStatus.json"
-				MaxRetries     = 5
-				RetryInterval  = 10
-			}
+		# 	# Example usage with try-catch mechanism and Write-EnhancedLog
+		# 	$AnalyzeOneDriveSyncUtilStatusParams = @{
+		# 		LogFolder      = "logs"
+		# 		StatusFileName = "ODSyncUtilStatus.json"
+		# 		MaxRetries     = 5
+		# 		RetryInterval  = 10
+		# 	}
 
 
-			Show-InstallationProgress -Status 'Anlyzing Task AADM Get OneDrive Sync Util Status'
+		# 	Show-InstallationProgress -Status 'Anlyzing Task AADM Get OneDrive Sync Util Status'
 
-			try {
-				$result = Analyze-OneDriveSyncUtilStatus @AnalyzeOneDriveSyncUtilStatusParams
+		# 	try {
+		# 		$result = Analyze-OneDriveSyncUtilStatus @AnalyzeOneDriveSyncUtilStatusParams
 
-				# Example decision-making based on the result
-				if ($result.Status -eq "Healthy") {
+		# 		# Example decision-making based on the result
+		# 		if ($result.Status -eq "Healthy") {
 
-					Show-InstallationProgress -Status 'OneDrive is healthy... proceeding with migration'
-					Write-EnhancedLog -Message "OneDrive is healthy, no further action required." -Level "INFO"
+		# 			Show-InstallationProgress -Status 'OneDrive is healthy... proceeding with migration'
+		# 			Write-EnhancedLog -Message "OneDrive is healthy, no further action required." -Level "INFO"
 					
-				}
-				elseif ($result.Status -eq "InProgress") {
-					Write-EnhancedLog -Message "OneDrive is syncing, please wait..." -Level "INFO"
-					exit 1
-				}
-				elseif ($result.Status -eq "Failed") {
-					Write-EnhancedLog -Message "OneDrive has encountered an error, please investigate." -Level "WARNING"
-					exit 1
-				}
-				else {
-					Write-EnhancedLog -Message "OneDrive status is unknown, further analysis required." -Level "NOTICE"
-					Write-EnhancedLog -Message "Exiting due to unknown OneDrive status." -Level "CRITICAL"
-					exit 1
-				}
-			}
-			catch {
-				Write-EnhancedLog -Message "An error occurred while analyzing OneDrive status: $($_.Exception.Message)" -Level "ERROR"
-				Write-EnhancedLog -Message "Please check if you are logged in to OneDrive and try again." -Level "ERROR"
-				Handle-Error -ErrorRecord $_
+		# 		}
+		# 		elseif ($result.Status -eq "InProgress") {
+		# 			Write-EnhancedLog -Message "OneDrive is syncing, please wait..." -Level "INFO"
+		# 			exit 1
+		# 		}
+		# 		elseif ($result.Status -eq "Failed") {
+		# 			Write-EnhancedLog -Message "OneDrive has encountered an error, please investigate." -Level "WARNING"
+		# 			exit 1
+		# 		}
+		# 		else {
+		# 			Write-EnhancedLog -Message "OneDrive status is unknown, further analysis required." -Level "NOTICE"
+		# 			Write-EnhancedLog -Message "Exiting due to unknown OneDrive status." -Level "CRITICAL"
+		# 			exit 1
+		# 		}
+		# 	}
+		# 	catch {
+		# 		Write-EnhancedLog -Message "An error occurred while analyzing OneDrive status: $($_.Exception.Message)" -Level "ERROR"
+		# 		Write-EnhancedLog -Message "Please check if you are logged in to OneDrive and try again." -Level "ERROR"
+		# 		Handle-Error -ErrorRecord $_
     
-				# Throw to halt the entire script
-				throw $_
-			}
-		}
+		# 		# Throw to halt the entire script
+		# 		throw $_
+		# 	}
+		# }
 
 		#endregion AnalyzeOneDriveSyncUtilStatusParams
 
@@ -476,7 +477,7 @@ Try {
 		## <Perform Installation tasks here>
 
 
-		Show-InstallationProgress -Status 'Calling Main-MigrateToAADJOnly to schedule Entra Join on next reboot, suspend bitlocker and Leave current domain '
+		# Show-InstallationProgress -Status 'Calling Main-MigrateToAADJOnly to schedule Entra Join on next reboot, suspend bitlocker and Leave current domain '
 		
 
 		# Script variables
@@ -495,7 +496,7 @@ Try {
 			ScriptPath       = "C:\ProgramData\AADMigration\Scripts\Phase1EntraJoin.PostRunOnce.ps1"
 		}
 
-		Main-MigrateToAADJOnly @MainMigrateParams
+		# Main-MigrateToAADJOnly @MainMigrateParams
 
 		##*===============================================
 		##* POST-INSTALLATION
@@ -510,7 +511,7 @@ Try {
 			TaskName = "PR4B-AADM Launch PSADT for Interactive Migration"
 			TaskPath = "\AAD Migration\"
 		}
-		Disable-ScheduledTaskByPath @DisableScheduledTaskByPath
+		# Disable-ScheduledTaskByPath @DisableScheduledTaskByPath
 
 		
 
@@ -574,13 +575,13 @@ Try {
 	
 
 
-		Show-InstallationProgress -Status 'Computer has left the domain and will reboot now to start Entra Join (Phase 1)'
+		# Show-InstallationProgress -Status 'Computer has left the domain and will reboot now to start Entra Join (Phase 1)'
 
 		# Restart-ComputerIfNeeded
 
 		## Display a message at the end of the install
 		# If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait }
-		If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'Please reboot after confirming that all files are backed up to OneDrive' -ButtonRightText 'OK' -Icon Information -NoWait }
+		# If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'Please reboot after confirming that all files are backed up to OneDrive' -ButtonRightText 'OK' -Icon Information -NoWait }
 	}
 	ElseIf ($deploymentType -ieq 'Uninstall') {
 		##*===============================================

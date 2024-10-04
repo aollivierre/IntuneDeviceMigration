@@ -4,7 +4,7 @@
 
 # Set environment variable globally for all users
 
-$global:mode = 'prod'
+$global:mode = 'dev'
 
 [System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'Machine')
 [System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'process')
@@ -139,11 +139,11 @@ switch ($global:mode) {
 
 # Wait-Debugger
 
-Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
+# Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
 
 # Wait-Debugger
 
-# Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
+Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
 
 # Define a hashtable for splatting
 $moduleStarterParams = @{
@@ -259,6 +259,9 @@ function Remove-AADMigrationArtifacts {
             if (Test-Path -Path $path) {
                 Write-AADMigrationLog "Removing $name ($path)..." -Level 'INFO'
                 Remove-Item -Path $path -Recurse -Force
+
+                # Remove-EnhancedItem -Path $path -MaxRetries 3 -RetryInterval 3
+
             }
             else {
                 Write-AADMigrationLog "$name ($path) does not exist, skipping..." -Level 'WARNING'
@@ -450,9 +453,11 @@ try {
     try {
         Write-EnhancedLog -Message "Script execution started" -Level "NOTICE"
         Manage-UserSessions
-    } catch {
+    }
+    catch {
         Handle-Error -ErrorRecord $_
-    } finally {
+    }
+    finally {
         Write-EnhancedLog -Message "Script execution finished" -Level "NOTICE"
     }
 
@@ -519,9 +524,6 @@ try {
         New-Item -Path "C:\temp" -ItemType Directory
     }
 
-    # Securely prompt for the GitHub Personal Access Token (PAT)
-    # $SecurePAT = Read-Host -AsSecureString "Please enter your GitHub Personal Access Token (PAT)"
-
     $SecurePAT = Get-GitHubPAT
 
     if ($null -ne $SecurePAT) {
@@ -532,12 +534,42 @@ try {
     else {
         Write-EnhancedLog -Message "No PAT was captured."
     }
-
-
-    # Convert the SecureString to an encrypted string and store it in a file
-    $SecurePAT | ConvertFrom-SecureString | Set-Content -Path $secureFilePath
-
-    Write-EnhancedLog -Message "Your secure PAT has been saved to $secureFilePath"
+    
+    
+    if ($SecurePAT -is [System.Security.SecureString]) {
+        Write-Host "SecurePAT is a valid SecureString."
+    }
+    else {
+        Write-Host "SecurePAT is NOT a valid SecureString."
+    }
+    
+    
+    # Wait-Debugger
+    
+    
+    # Key Gen
+    
+    # Generate a valid 256-bit (32-byte) key
+    $key = (1..32 | ForEach-Object { Get-Random -Maximum 256 }) -join ','
+    
+    # Convert the key into a byte array
+    $keyBytes = $key -split ',' | ForEach-Object { [byte]$_ }
+    
+    # Save the key as comma-separated values to a file
+    $key | Out-File "C:\temp\SecureKey.txt"
+    
+    
+    
+    #Encryption
+    
+    # Convert the PAT to SecureString
+    # $SecurePAT = $SecurePAT | ConvertTo-SecureString -AsPlainText -Force
+    
+    # Encrypt using the generated 256-bit key
+    $EncryptedPAT = $SecurePAT | ConvertFrom-SecureString -Key $keyBytes
+    
+    # Save the encrypted PAT to a file
+    $EncryptedPAT | Out-File $secureFilePath
 
 
 
