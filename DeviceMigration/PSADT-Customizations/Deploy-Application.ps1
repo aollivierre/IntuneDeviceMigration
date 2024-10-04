@@ -512,6 +512,22 @@ Try {
 		}
 		Disable-ScheduledTaskByPath @DisableScheduledTaskByPath
 
+
+
+		$DisableScheduledTaskByPath = @{
+			TaskName = "User File Backup to OneDrive"
+			TaskPath = "\AAD Migration\"
+		}
+		Disable-ScheduledTaskByPath @DisableScheduledTaskByPath
+	
+	
+	
+		$DisableScheduledTaskByPath = @{
+			TaskName = "AADM Get OneDrive Sync Util Status"
+			TaskPath = "\AAD Migration\"
+		}
+		Disable-ScheduledTaskByPath @DisableScheduledTaskByPath
+
 		
 
 		Show-InstallationProgress -Status 'Uploading logs to GitHub'
