@@ -309,6 +309,73 @@ function Remove-AADMigrationArtifacts {
         catch {
             Write-AADMigrationLog "Local user $localUser does not exist, skipping..." -Level 'WARNING'
         }
+
+
+        $RegistrySettings = @(
+            @{
+                RegValName = "dontdisplaylastusername"
+                RegValType = "DWORD"
+                RegValData = "0"
+                RegKeyPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+            },
+            @{
+                RegValName = "legalnoticecaption"
+                RegValType = "String"
+                RegValData = ""
+                RegKeyPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+            },
+            @{
+                RegValName = "legalnoticetext"
+                RegValType = "String"
+                RegValData = ""
+                RegKeyPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+            },
+            @{
+                RegValName = "NoLockScreen"
+                RegValType = "DWORD"
+                RegValData = "0"
+                RegKeyPath = "HKLM:\Software\Policies\Microsoft\Windows\Personalization"
+            }
+        )
+
+
+
+
+
+
+        
+        # Create a new hashtable to store settings grouped by their RegKeyPath
+        $groupedSettings = @{}
+
+        # Group the registry settings by their RegKeyPath
+        foreach ($regSetting in $RegistrySettings) {
+            $regKeyPath = $regSetting.RegKeyPath
+     
+            if (-not $groupedSettings.ContainsKey($regKeyPath)) {
+                $groupedSettings[$regKeyPath] = @()
+            }
+     
+            # Add the current setting to the appropriate group
+            $groupedSettings[$regKeyPath] += $regSetting
+        }
+     
+        # Now apply the grouped registry settings
+        foreach ($regKeyPath in $groupedSettings.Keys) {
+            $settingsForKey = $groupedSettings[$regKeyPath]
+     
+            # Call Apply-RegistrySettings once per group with the correct RegKeyPath
+            Apply-RegistrySettings -RegistrySettings $settingsForKey -RegKeyPath $regKeyPath
+        }
+
+
+
+
+
+
+        # Wait-Debugger
+
+
+
     }
 
     End {
@@ -600,8 +667,6 @@ try {
 
     # Invoke the function using the splatted parameters
     Invoke-VaultDecryptionProcess @params
-
-
 
 
     # Import migration configuration

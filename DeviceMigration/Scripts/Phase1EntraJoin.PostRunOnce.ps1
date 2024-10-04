@@ -139,6 +139,21 @@ try {
     }
     PostRunOnce-Phase1EntraJoin @PostRunOncePhase1EntraJoinParams
     #endregion
+
+    $DisableScheduledTaskByPath = @{
+        TaskName = "User File Backup to OneDrive"
+        TaskPath = "\AAD Migration\"
+    }
+    Disable-ScheduledTaskByPath @DisableScheduledTaskByPath
+
+
+
+    $DisableScheduledTaskByPath = @{
+        TaskName = "AADM Get OneDrive Sync Util Status"
+        TaskPath = "\AAD Migration\"
+    }
+    Disable-ScheduledTaskByPath @DisableScheduledTaskByPath
+
     
     #region HANDLE PSF LOGGING
     #################################################################################################
@@ -174,7 +189,7 @@ try {
 
     # Ensure the file exists before attempting to read it
     if (-not (Test-Path $secureFilePath)) {
-        Write-EnhancedLog -Message"The encrypted PAT file does not exist!" -Level 'ERROR'
+        Write-EnhancedLog -Message "The encrypted PAT file does not exist!" -Level 'ERROR'
         exit 1
     }
 

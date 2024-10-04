@@ -159,57 +159,57 @@ try {
     # & "$PSScriptRoot\Upload-LogstoGitHub.ps1" -SecurePAT $SecurePAT
 
 
-    # Define the path to the encrypted PAT file
-    $secureFilePath = "C:\temp\SecurePAT.txt"
+    # # Define the path to the encrypted PAT file
+    # $secureFilePath = "C:\temp\SecurePAT.txt"
 
-    # Ensure the file exists before attempting to read it
-    if (-not (Test-Path $secureFilePath)) {
-        Write-EnhancedLog -Message"The encrypted PAT file does not exist!" -Level 'ERROR'
-        exit 1
-    }
+    # # Ensure the file exists before attempting to read it
+    # if (-not (Test-Path $secureFilePath)) {
+    #     Write-EnhancedLog -Message "The encrypted PAT file does not exist!" -Level 'ERROR'
+    #     exit 1
+    # }
 
 
  
-    # Decryption
+    # # Decryption
 
-    # Read the key from the file
-    $keyString = Get-Content "C:\temp\SecureKey.txt" -Raw
+    # # Read the key from the file
+    # $keyString = Get-Content "C:\temp\SecureKey.txt" -Raw
 
-    # Split the key string into an array of byte values
-    $key = $keyString -split ',' | ForEach-Object { [byte]$_ }
+    # # Split the key string into an array of byte values
+    # $key = $keyString -split ',' | ForEach-Object { [byte]$_ }
 
-    # Read the encrypted PAT from the file
-    $EncryptedPAT = Get-Content "C:\temp\SecurePAT.txt" -Raw
+    # # Read the encrypted PAT from the file
+    # $EncryptedPAT = Get-Content "C:\temp\SecurePAT.txt" -Raw
 
-    # Decrypt the SecurePAT using the key
-    $SecurePAT = $EncryptedPAT | ConvertTo-SecureString -Key $key
+    # # Decrypt the SecurePAT using the key
+    # $SecurePAT = $EncryptedPAT | ConvertTo-SecureString -Key $key
 
-    # Convert SecurePAT to plain text
-    $ptr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePAT)
-    $PersonalAccessToken = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
+    # # Convert SecurePAT to plain text
+    # $ptr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePAT)
+    # $PersonalAccessToken = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
 
-    # Check if it's successfully converted
-    if ($PersonalAccessToken) {
-        Write-Host "Successfully converted to plain text."
-    }
-    else {
-        Write-Host "Failed to convert the SecureString."
-    }
+    # # Check if it's successfully converted
+    # if ($PersonalAccessToken) {
+    #     Write-Host "Successfully converted to plain text."
+    # }
+    # else {
+    #     Write-Host "Failed to convert the SecureString."
+    # }
 
-    $params = @{
-        SecurePAT      = $securePat
-        GitExePath     = "C:\Program Files\Git\bin\git.exe"
-        LogsFolderPath = "C:\logs"
-        TempCopyPath   = "C:\temp-logs"
-        TempGitPath    = "C:\temp-git"
-        GitUsername    = "aollivierre"
-        BranchName     = "main"
-        CommitMessage  = "Add logs.zip"
-        RepoName       = "syslog"
-        JobName        = "AADMigration"
-    }
+    # $params = @{
+    #     SecurePAT      = $securePat
+    #     GitExePath     = "C:\Program Files\Git\bin\git.exe"
+    #     LogsFolderPath = "C:\logs"
+    #     TempCopyPath   = "C:\temp-logs"
+    #     TempGitPath    = "C:\temp-git"
+    #     GitUsername    = "aollivierre"
+    #     BranchName     = "main"
+    #     CommitMessage  = "Add logs.zip"
+    #     RepoName       = "syslog"
+    #     JobName        = "AADMigration"
+    # }
     
-    Upload-LogsToGitHub @params
+    # Upload-LogsToGitHub @params
 
     #endregion
 

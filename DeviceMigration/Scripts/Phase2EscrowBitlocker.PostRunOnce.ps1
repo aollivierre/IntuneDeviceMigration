@@ -202,7 +202,7 @@ try {
 
     # Ensure the file exists before attempting to read it
     if (-not (Test-Path $secureFilePath)) {
-        Write-EnhancedLog -Message"The encrypted PAT file does not exist!" -Level 'ERROR'
+        Write-EnhancedLog -Message "The encrypted PAT file does not exist!" -Level 'ERROR'
         exit 1
     }
 
