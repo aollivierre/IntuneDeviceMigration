@@ -460,20 +460,81 @@ try {
 
 
 
+    # $params = @{
+    #     SecurePAT      = $securePat
+    #     GitExePath     = "C:\Program Files\Git\bin\git.exe"
+    #     LogsFolderPath = "C:\logs"
+    #     TempCopyPath   = "C:\temp-logs"
+    #     TempGitPath    = "C:\temp-git"
+    #     GitUsername    = "aollivierre"
+    #     BranchName     = "main"
+    #     CommitMessage  = "Add logs.zip"
+    #     RepoName       = "syslog"
+    #     JobName        = "AADMigration"
+    # }
+    
+    # Upload-LogsToGitHub @params
+
+
+
+    
+    # Ensure $tempPath exists
+    $secureFilePath = "$tempPath\$global:JobName-secrets\SecurePAT.txt"
+    if (-not (Test-Path "$tempPath\$global:JobName-secrets")) {
+        New-Item -Path "$tempPath\$global:JobName-secrets" -ItemType Directory
+    }
+
+    $SecurePAT = Get-GitHubPAT
+
+    if ($null -ne $SecurePAT) {
+        # Continue with the secure PAT
+        Write-EnhancedLog -Message "Using the captured PAT..."
+        # Further logic here
+    }
+    else {
+        Write-EnhancedLog -Message "No PAT was captured."
+    }
+    
+    
+    if ($SecurePAT -is [System.Security.SecureString]) {
+        Write-EnhancedLog -Message "SecurePAT is a valid SecureString."
+    }
+    else {
+        Write-EnhancedLog -Message "SecurePAT is NOT a valid SecureString."
+    }
+
+
+
+
+    # Example usage
+    try {
+        # $tempPath = Get-ReliableTempPath -LogLevel "INFO"
+        $tempPath = 'c:\temp'
+        Write-LogsUploadGitHub -Message "Temp Path Set To: $tempPath"
+    }
+    catch {
+        Write-LogsUploadGitHub -Message "Failed to get a valid temp path: $_"
+    }
+
+    $global:JobName = "AAD_Migration"
+
+
+
     $params = @{
         SecurePAT      = $securePat
         GitExePath     = "C:\Program Files\Git\bin\git.exe"
         LogsFolderPath = "C:\logs"
-        TempCopyPath   = "C:\temp-logs"
-        TempGitPath    = "C:\temp-git"
+        TempCopyPath   = "$tempPath\$global:JobName-logs"
+        TempGitPath    = "$tempPath\$global:JobName-git"
         GitUsername    = "aollivierre"
         BranchName     = "main"
         CommitMessage  = "Add logs.zip"
         RepoName       = "syslog"
-        JobName        = "AADMigration"
+        JobName        = $global:JobName
     }
     
     Upload-LogsToGitHub @params
+
 
 
 

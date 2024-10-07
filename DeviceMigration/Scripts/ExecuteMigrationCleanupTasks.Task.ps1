@@ -1,4 +1,5 @@
 $global:mode = $env:EnvironmentMode
+$global:JobName = "AAD_Migration"
 
 #region FIRING UP MODULE STARTER
 #################################################################################################
@@ -46,7 +47,6 @@ else {
 
 
 # Define the base logs path and job name
-$JobName = "AAD_Migration"
 $parentScriptName = Get-ParentScriptName
 Write-Host "Parent Script Name: $parentScriptName"
 

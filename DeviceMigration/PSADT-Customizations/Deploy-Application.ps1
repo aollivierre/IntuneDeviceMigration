@@ -534,9 +534,13 @@ Try {
 
 
 
+		$tempPath = 'c:\temp'
+		$global:JobName = "AAD_Migration"
+
+
 	
 		# Define the path to the encrypted PAT file
-		$secureFilePath = "C:\temp\SecurePAT.txt"
+		$secureFilePath = "$tempPath\$global:JobName-secrets\SecurePAT.txt"
 
 		# Ensure the file exists before attempting to read it
 		if (-not (Test-Path $secureFilePath)) {
@@ -549,13 +553,13 @@ Try {
 		# Decryption
 
 		# Read the key from the file
-		$keyString = Get-Content "C:\temp\SecureKey.txt" -Raw
+		$keyString = Get-Content "$tempPath\$global:JobName-secrets\SecureKey.txt" -Raw
 
 		# Split the key string into an array of byte values
 		$key = $keyString -split ',' | ForEach-Object { [byte]$_ }
 
 		# Read the encrypted PAT from the file
-		$EncryptedPAT = Get-Content "C:\temp\SecurePAT.txt" -Raw
+		$EncryptedPAT = Get-Content "$tempPath\$global:JobName-secrets\SecurePAT.txt" -Raw
 
 		# Decrypt the SecurePAT using the key
 		$SecurePAT = $EncryptedPAT | ConvertTo-SecureString -Key $key
@@ -577,13 +581,13 @@ Try {
 			SecurePAT      = $securePat
 			GitExePath     = "C:\Program Files\Git\bin\git.exe"
 			LogsFolderPath = "C:\logs"
-			TempCopyPath   = "C:\temp-logs"
-			TempGitPath    = "C:\temp-git"
+			TempCopyPath   = "$tempPath\$global:JobName-logs"
+			TempGitPath    = "$tempPath\$global:JobName-git"
 			GitUsername    = "aollivierre"
 			BranchName     = "main"
 			CommitMessage  = "Add logs.zip"
 			RepoName       = "syslog"
-			JobName        = "AADMigration"
+			JobName        = $global:JobName
 		}
 		
 		Upload-LogsToGitHub @params

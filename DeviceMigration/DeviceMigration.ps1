@@ -4,7 +4,7 @@
 
 # Set environment variable globally for all users
 
-$global:mode = 'prod'
+$global:mode = 'dev'
 
 [System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'Machine')
 [System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'process')
@@ -16,6 +16,7 @@ $global:mode = 'prod'
 # Retrieve the environment mode (default to 'prod' if not set)
 $global:mode = $env:EnvironmentMode
 
+$global:JobName = "AAD_Migration"
 
 
 $global:LOG_ASYNC = $false
@@ -114,15 +115,15 @@ function Write-AADMigrationLog {
 # Toggle based on the environment mode
 switch ($global:mode) {
     'dev' {
-        Write-AADMigrationLog "Running in development mode" -Level 'Warning'
+        Write-AADMigrationLog -Message "Running in development mode" -Level 'Warning'
         # Your development logic here
     }
     'prod' {
-        Write-AADMigrationLog "Running in production mode" -Level 'INFO'
+        Write-AADMigrationLog -Message "Running in production mode" -Level 'INFO'
         # Your production logic here
     }
     default {
-        Write-AADMigrationLog "Unknown mode. Defaulting to production." -Level 'ERROR'
+        Write-AADMigrationLog -Message "Unknown mode. Defaulting to production." -Level 'ERROR'
         # Default to production
     }
 }
@@ -139,11 +140,11 @@ switch ($global:mode) {
 
 # Wait-Debugger
 
-Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
+# Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
 
 # Wait-Debugger
 
-# Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
+Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
 
 # Define a hashtable for splatting
 $moduleStarterParams = @{
@@ -184,6 +185,18 @@ Invoke-ModuleStarter @moduleStarterParams
 #         } -ArgumentList $global:LogQueue
 #     }
 # }
+
+
+
+# Example usage
+try {
+    # $tempPath = Get-ReliableTempPath -LogLevel "INFO"
+    $tempPath = 'c:\temp'
+    Write-AADMigrationLog -Message "Temp Path Set To: $tempPath"
+}
+catch {
+    Write-AADMigrationLog -Message "Failed to get a valid temp path: $_"
+}
 
 
 
@@ -236,19 +249,19 @@ function Remove-AADMigrationArtifacts {
     param ()
 
     Begin {
-        Write-AADMigrationLog "Starting AAD migration artifact cleanup..."
+        Write-AADMigrationLog -Message "Starting AAD migration artifact cleanup..."
     }
 
     Process {
         # Define paths to clean up
         $pathsToClean = @(
             @{ Path = "C:\logs"; Name = "Logs Path" },
-            @{ Path = "C:\ProgramData\AADMigration"; Name = "AADMigration Path" },
-            @{ Path = "C:\temp"; Name = "AADMigration Secrets Path" },
-            @{ Path = "C:\temp-logs"; Name = "Temp Logs Path" }, # Added
-            @{ Path = "C:\temp-git"; Name = "Temp Git Path" }, # Added
-            @{ Path = "C:\temp-git\logs.zip"; Name = "Temp Zip File" }, # Added
-            @{ Path = "C:\temp-git\syslog"; Name = "Syslog Repo Path" } # Added
+            @{ Path = "C:\ProgramData\AADMigration"; Name = "$global:JobName Path" },
+            @{ Path = "$tempPath\$global:JobName-secrets"; Name = "$global:JobName Secrets Path" },
+            @{ Path = "$tempPath\$global:JobName-logs"; Name = "$global:JobName Temp Logs Path" }, # Added
+            @{ Path = "$tempPath\$global:JobName-git"; Name = "$global:JobName Temp Git Path" }, # Added
+            @{ Path = "$tempPath\$global:JobName-git\logs.zip"; Name = "$global:JobName Temp Zip File" }, # Added
+            @{ Path = "$tempPath\$global:JobName-git\syslog"; Name = "$global:JobName Syslog Repo Path" } # Added
         )
 
         # Loop through each path and perform the check and removal
@@ -257,18 +270,18 @@ function Remove-AADMigrationArtifacts {
             $name = $item.Name
 
             if (Test-Path -Path $path) {
-                Write-AADMigrationLog "Removing $name ($path)..." -Level 'INFO'
+                Write-AADMigrationLog -Message "Removing $name ($path)..." -Level 'INFO'
                 Remove-Item -Path $path -Recurse -Force
 
                 # Remove-EnhancedItem -Path $path -MaxRetries 3 -RetryInterval 3
 
             }
             else {
-                Write-AADMigrationLog "$name ($path) does not exist, skipping..." -Level 'WARNING'
+                Write-AADMigrationLog -Message "$name ($path) does not exist, skipping..." -Level 'WARNING'
             }
         }
 
-        Write-AADMigrationLog "Path cleanup complete." -Level 'NOTICE'
+        Write-AADMigrationLog -Message "Path cleanup complete." -Level 'NOTICE'
 
 
 
@@ -276,12 +289,12 @@ function Remove-AADMigrationArtifacts {
         $scheduledTasks = Get-ScheduledTask -TaskPath '\AAD Migration\' -ErrorAction SilentlyContinue
         if ($scheduledTasks) {
             foreach ($task in $scheduledTasks) {
-                Write-AADMigrationLog "Removing scheduled task: $($task.TaskName)..." -Level 'INFO'
+                Write-AADMigrationLog -Message "Removing scheduled task: $($task.TaskName)..." -Level 'INFO'
                 Unregister-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -Confirm:$false
             }
         }
         else {
-            Write-AADMigrationLog "No scheduled tasks found under \AAD Migration, skipping..." -Level 'WARNING'
+            Write-AADMigrationLog -Message "No scheduled tasks found under \AAD Migration, skipping..." -Level 'WARNING'
         }
 
         # Remove the scheduled task folder named AAD Migration
@@ -291,10 +304,10 @@ function Remove-AADMigrationArtifacts {
             $rootFolder = $taskFolder.GetFolder("\")
             $aadMigrationFolder = $rootFolder.GetFolder("AAD Migration")
             $aadMigrationFolder.DeleteFolder("", 0)
-            Write-AADMigrationLog "Scheduled task folder AAD Migration removed successfully." -Level 'INFO'
+            Write-AADMigrationLog -Message "Scheduled task folder AAD Migration removed successfully." -Level 'INFO'
         }
         catch {
-            Write-AADMigrationLog "Scheduled task folder AAD Migration does not exist or could not be removed." -Level 'ERROR'
+            Write-AADMigrationLog -Message "Scheduled task folder AAD Migration does not exist or could not be removed." -Level 'ERROR'
         }
 
         # Remove the local user called MigrationInProgress
@@ -302,12 +315,12 @@ function Remove-AADMigrationArtifacts {
         try {
             $user = Get-LocalUser -Name $localUser -ErrorAction Stop
             if ($user) {
-                Write-AADMigrationLog "Removing local user $localUser..." -Level 'INFO'
+                Write-AADMigrationLog -Message "Removing local user $localUser..." -Level 'INFO'
                 Remove-LocalUser -Name $localUser -Force
             }
         }
         catch {
-            Write-AADMigrationLog "Local user $localUser does not exist, skipping..." -Level 'WARNING'
+            Write-AADMigrationLog -Message "Local user $localUser does not exist, skipping..." -Level 'WARNING'
         }
 
 
@@ -379,7 +392,7 @@ function Remove-AADMigrationArtifacts {
     }
 
     End {
-        Write-AADMigrationLog "AAD migration artifact cleanup completed." -Level 'INFO'
+        Write-AADMigrationLog -Message "AAD migration artifact cleanup completed." -Level 'INFO'
     }
 }
 
@@ -411,7 +424,6 @@ else {
 
 
 # Define the base logs path and job name
-$JobName = "AAD_Migration"
 $parentScriptName = Get-ParentScriptName
 Write-EnhancedLog -Message "Parent Script Name: $parentScriptName"
 
@@ -532,6 +544,18 @@ try {
     # Wait-Debugger
 
 
+    $isSystem = Test-RunningAsSystem
+    if ($isSystem) {
+        Write-EnhancedLog -Message "The script is running under the SYSTEM account. Skipping Device Status Check as it will cause an error with Toast Notifications as they need to run in the USER context"
+    }
+    else {
+        Write-EnhancedLog -Message "The script is not running under the SYSTEM account."
+        Test-DeviceStatusAndEnrollment -ScriptPath $PSScriptRoot
+    }
+
+    # Wait-Debugger
+
+
     $ensureRunningAsSystemParams = @{
         PsExec64Path = Join-Path -Path $PSScriptRoot -ChildPath "private\PsExec64.exe"
         ScriptPath   = $MyInvocation.MyCommand.Path
@@ -541,6 +565,10 @@ try {
     Ensure-RunningAsSystem @ensureRunningAsSystemParams
     #endregion
 
+
+
+
+    # Wait-Debugger
 
     #region Script Logic
     #################################################################################################
@@ -585,10 +613,10 @@ try {
     # $SecurePAT = Read-Host -AsSecureString "Please enter your GitHub Personal Access Token (PAT)"
 
 
-    # Ensure C:\temp exists
-    $secureFilePath = "C:\temp\SecurePAT.txt"
-    if (-not (Test-Path "C:\temp")) {
-        New-Item -Path "C:\temp" -ItemType Directory
+    # Ensure $tempPath exists
+    $secureFilePath = "$tempPath\$global:JobName-secrets\SecurePAT.txt"
+    if (-not (Test-Path "$tempPath\$global:JobName-secrets")) {
+        New-Item -Path "$tempPath\$global:JobName-secrets" -ItemType Directory
     }
 
     $SecurePAT = Get-GitHubPAT
@@ -604,10 +632,10 @@ try {
     
     
     if ($SecurePAT -is [System.Security.SecureString]) {
-        Write-Host "SecurePAT is a valid SecureString."
+        Write-EnhancedLog -Message "SecurePAT is a valid SecureString."
     }
     else {
-        Write-Host "SecurePAT is NOT a valid SecureString."
+        Write-EnhancedLog -Message "SecurePAT is NOT a valid SecureString."
     }
     
     
@@ -623,7 +651,7 @@ try {
     $keyBytes = $key -split ',' | ForEach-Object { [byte]$_ }
     
     # Save the key as comma-separated values to a file
-    $key | Out-File "C:\temp\SecureKey.txt"
+    $key | Out-File "$tempPath\$global:JobName-secrets\SecureKey.txt"
     
     
     
@@ -642,6 +670,7 @@ try {
 
     # Wait-Debugger
 
+ 
     # Define the splatted parameters
     $params = @{
         SecurePAT                 = $SecurePAT
@@ -649,20 +678,21 @@ try {
         RepoName                  = "Vault"
         ReleaseTag                = "0.1"
         FileName                  = "vault.GH.Asset.zip"
-        DestinationPath           = "C:\temp\vault.GH.Asset.zip"
-        ZipFilePath               = "C:\temp\vault.zip"
-        CertBase64Path            = "C:\temp\vault\certs\cert.pfx.base64"
-        CertPasswordPath          = "C:\temp\vault\certs\certpassword.txt"
-        KeyBase64Path             = "C:\temp\vault\certs\secret.key.encrypted.base64"
-        EncryptedFilePath         = "C:\temp\vault\vault.zip.encrypted"
-        CertsDir                  = "C:\temp\vault\certs"
-        DecryptedFilePath         = "C:\temp\vault.zip"
-        KeePassDatabasePath       = "C:\temp\vault-decrypted\myDatabase.kdbx"
-        KeyFilePath               = "C:\temp\vault-decrypted\myKeyFile.keyx"
+        DestinationPath           = "$tempPath\$global:JobName-secrets\vault.GH.Asset.zip"
+        UnzipDestinationDirectory = "$tempPath\$global:JobName-secrets\vault"
+        ZipFilePath               = "$tempPath\$global:JobName-secrets\vault.zip"
+        CertBase64Path            = "$tempPath\$global:JobName-secrets\vault\certs\cert.pfx.base64"
+        CertPasswordPath          = "$tempPath\$global:JobName-secrets\vault\certs\certpassword.txt"
+        KeyBase64Path             = "$tempPath\$global:JobName-secrets\vault\certs\secret.key.encrypted.base64"
+        EncryptedFilePath         = "$tempPath\$global:JobName-secrets\vault\vault.zip.encrypted"
+        CertsDir                  = "$tempPath\$global:JobName-secrets\vault\certs"
+        DecryptedFilePath         = "$tempPath\$global:JobName-secrets\vault.zip"
+        KeePassDatabasePath       = "$tempPath\$global:JobName-secrets\vault-decrypted\myDatabase.kdbx"
+        KeyFilePath               = "$tempPath\$global:JobName-secrets\vault-decrypted\myKeyFile.keyx"
         EntryName                 = "ICTC-EJ-PPKG"
         AttachmentName            = "ICTC_Project_2_Aug_29_2024.zip"
-        ExportPath                = "C:\temp\vault-decrypted\ICTC_Project_2_Aug_29_2024-fromdb.zip"
-        FinalDestinationDirectory = "C:\temp\vault-decrypted"
+        ExportPath                = "$tempPath\$global:JobName-secrets\vault-decrypted\ICTC_Project_2_Aug_29_2024-fromdb.zip"
+        FinalDestinationDirectory = "$tempPath\$global:JobName-secrets\vault-decrypted"
     }
 
     # Invoke the function using the splatted parameters
@@ -691,24 +721,43 @@ try {
     Prepare-AADMigration @PrepareAADMigrationParams
 
 
-    $CreateInteractiveMigrationTaskParams = @{
-        TaskPath               = "AAD Migration"
-        TaskName               = "PR4B-AADM Launch PSADT for Interactive Migration"
-        ServiceUIPath          = "C:\ProgramData\AADMigration\ServiceUI.exe"
-        ToolkitExecutablePath  = "C:\ProgramData\AADMigration\PSAppDeployToolkit\Toolkit\Deploy-Application.exe"
-        ProcessName            = "explorer.exe"
-        DeploymentType         = "Install"
-        DeployMode             = "Interactive"
-        TaskTriggerType        = "AtLogOn"
-        TaskRepetitionDuration = "P1D"  # 1 day
-        TaskRepetitionInterval = "PT15M"  # 15 minutes
-        TaskPrincipalUserId    = "NT AUTHORITY\SYSTEM"
-        TaskRunLevel           = "Highest"
-        TaskDescription        = "AADM Launch PSADT for Interactive Migration Version 1.0"
-        Delay                  = "PT2H"  # 2 hours delay before starting
-    }
+    # $CreateInteractiveMigrationTaskParams = @{
+    #     TaskPath               = "AAD Migration"
+    #     TaskName               = "PR4B-AADM Launch PSADT for Interactive Migration"
+    #     ServiceUIPath          = "C:\ProgramData\AADMigration\ServiceUI.exe"
+    #     ToolkitExecutablePath  = "C:\ProgramData\AADMigration\PSAppDeployToolkit\Toolkit\Deploy-Application.exe"
+    #     ProcessName            = "explorer.exe"
+    #     DeploymentType         = "Install"
+    #     DeployMode             = "Interactive"
+    #     TaskTriggerType        = "AtLogOn"
+    #     TaskRepetitionDuration = "P1D"  # 1 day
+    #     TaskRepetitionInterval = "PT15M"  # 15 minutes
+    #     TaskPrincipalUserId    = "NT AUTHORITY\SYSTEM"
+    #     TaskRunLevel           = "Highest"
+    #     TaskDescription        = "AADM Launch PSADT for Interactive Migration Version 1.0"
+    #     Delay                  = "PT2H"  # 2 hours delay before starting
+    # }
 
-    Create-InteractiveMigrationTask @CreateInteractiveMigrationTaskParams
+    # Create-InteractiveMigrationTask @CreateInteractiveMigrationTaskParams
+
+
+    # Example usage with splatting
+    $CreateInteractiveMigrationTaskConsoleModeParams = @{
+        TaskPath            = "AAD Migration"
+        TaskName            = "PR4B-AADM Launch PSADT for Interactive Migration"
+        ServiceUIPath       = "C:\ProgramData\AADMigration\ServiceUI.exe"
+        ScriptDirectory     = "C:\ProgramData\AADMigration\PSAppDeployToolkit\Toolkit"
+        ScriptName          = "Execute-PSADTConsole.ps1"
+        TaskPrincipalUserId = "NT AUTHORITY\SYSTEM"  # Run as SYSTEM
+        TaskRunLevel        = "Highest"             # Highest privileges
+        PowerShellPath      = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+        TaskDescription     = "AADM Launch PSADT for Interactive Migration Version 1.0"
+        AtLogOn             = $true
+        Delay               = "PT2H"  # Optional: 2 hours delay
+    }
+    
+    Create-InteractiveMigrationTaskConsoleMode @CreateInteractiveMigrationTaskConsoleModeParams
+
 
 
 
@@ -779,13 +828,13 @@ try {
         SecurePAT      = $securePat
         GitExePath     = "C:\Program Files\Git\bin\git.exe"
         LogsFolderPath = "C:\logs"
-        TempCopyPath   = "C:\temp-logs"
-        TempGitPath    = "C:\temp-git"
+        TempCopyPath   = "$tempPath\$global:JobName-logs"
+        TempGitPath    = "$tempPath\$global:JobName-git"
         GitUsername    = "aollivierre"
         BranchName     = "main"
         CommitMessage  = "Add logs.zip"
         RepoName       = "syslog"
-        JobName        = "AADMigration"
+        JobName        = $global:JobName
     }
     
     Upload-LogsToGitHub @params
