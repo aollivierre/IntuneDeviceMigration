@@ -2,7 +2,7 @@
 
 
 # function Get-GitHubPAT {
-#     $secretsFile = Join-Path -Path $PSScriptRoot -ChildPath "secrets.psd1"
+#     $secretsFile = Join-Path -Path $PSScriptRoot -ChildPath "secrets.GitHub.ps1"
 
 #     if (Test-Path $secretsFile) {
 #         $secrets = Import-PowerShellDataFile -Path $secretsFile
@@ -16,7 +16,7 @@
 #     # Prompt the user to enter the PAT if not found
 #     $PAT = Read-Host -Prompt "Enter your GitHub Personal Access Token (PAT)" -AsSecureString
     
-#     # Encrypt and save the PAT to the secrets.psd1 file for future use
+#     # Encrypt and save the PAT to the secrets.GitHub.ps1 file for future use
 #     $securePat = $PAT | ConvertFrom-SecureString
 #     $secrets = @{
 #         GitHubPAT = $securePat
@@ -92,14 +92,14 @@ function Authenticate-GitHubAPI {
             Write-GitHubAPIWebScriptLog -Message "Authenticating with GitHub API..." -Level 'INFO'
 
             # Define the secrets file path
-            $secretsFilePath = Join-Path -Path $PSScriptRoot -ChildPath "secrets.psd1"
+            $secretsFilePath = Join-Path -Path $PSScriptRoot -ChildPath "secrets.GitHub.ps1"
 
             if (-not (Test-Path -Path $secretsFilePath)) {
                 # If the secrets file does not exist, prompt the user to enter the token
                 Write-Warning "Secrets file not found. Please enter your GitHub token."
                 $secureToken = Read-Host "Enter your GitHub token" -AsSecureString
                 
-                # Store the token securely in the secrets.psd1 file
+                # Store the token securely in the secrets.GitHub.ps1 file
                 $secretsContent = @{
                     GitHubToken = $secureToken | ConvertFrom-SecureString
                 }
@@ -163,7 +163,7 @@ $path = "Setup.ps1"
 Authenticate-GitHubAPI -ApiUrl "https://api.github.com"
 
 # Assuming the token is now stored securely and retrieved in the session, we use it
-$secretsFilePath = Join-Path -Path $PSScriptRoot -ChildPath "secrets.psd1"
+$secretsFilePath = Join-Path -Path $PSScriptRoot -ChildPath "secrets.GitHub.ps1"
 $secrets = Import-Clixml -Path $secretsFilePath
 $secureToken = $secrets.GitHubToken | ConvertTo-SecureString
 

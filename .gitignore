@@ -1,3 +1,4 @@
 
 *.ppkg
 secrets.psd1
+DeviceMigration/secrets.bitly.psd1
