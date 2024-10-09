@@ -577,19 +577,29 @@ Try {
 		}
 
 		
+		# Generate timestamp and GUID
+		$timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+		$guid = [guid]::NewGuid().ToString()
+   
+		# Create timestamped and GUID-stamped paths for TempCopyPath and TempGitPath
+		$tempCopyPath = "$tempPath\$global:JobName-logs-$timestamp-$guid"
+		$tempGitPath = "$tempPath\$global:JobName-git-$timestamp-$guid"
+   
+		# Define parameters for the Upload-LogsToGitHub function
 		$params = @{
 			SecurePAT      = $securePat
 			GitExePath     = "C:\Program Files\Git\bin\git.exe"
 			LogsFolderPath = "C:\logs"
-			TempCopyPath   = "$tempPath\$global:JobName-logs"
-			TempGitPath    = "$tempPath\$global:JobName-git"
+			TempCopyPath   = $tempCopyPath
+			TempGitPath    = $tempGitPath
 			GitUsername    = "aollivierre"
 			BranchName     = "main"
 			CommitMessage  = "Add logs.zip"
 			RepoName       = "syslog"
 			JobName        = $global:JobName
 		}
-		
+   
+		# Call the Upload-LogsToGitHub function with the parameters
 		Upload-LogsToGitHub @params
 	
 

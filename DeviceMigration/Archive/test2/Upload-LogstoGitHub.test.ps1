@@ -3,7 +3,7 @@ param (
 )
 
 $global:mode = $env:EnvironmentMode
-# $global:mode = 'dev'
+$global:mode = 'dev'
 
 function Write-LogsUploadGitHub {
     param (
@@ -66,20 +66,20 @@ switch ($global:mode) {
 
 # Wait-Debugger
 
-# Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
+Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
 
 # Define a hashtable for splatting
-# $moduleStarterParams = @{
-#     Mode                   = $global:mode
-#     SkipPSGalleryModules   = $false
-#     SkipCheckandElevate    = $false
-#     SkipPowerShell7Install = $false
-#     SkipEnhancedModules    = $false
-#     SkipGitRepos           = $true
-# }
+$moduleStarterParams = @{
+    Mode                   = $global:mode
+    SkipPSGalleryModules   = $false
+    SkipCheckandElevate    = $false
+    SkipPowerShell7Install = $false
+    SkipEnhancedModules    = $false
+    SkipGitRepos           = $true
+}
 
 # Call the function using the splat
-# Invoke-ModuleStarter @moduleStarterParams
+Invoke-ModuleStarter @moduleStarterParams
 
 #endregion FIRING UP MODULE STARTER
 
@@ -477,11 +477,25 @@ try {
 
 
 
+    # Example usage
+    try {
+        # $tempPath = Get-ReliableTempPath -LogLevel "INFO"
+        $tempPath = 'c:\temp'
+        Write-LogsUploadGitHub -Message "Temp Path Set To: $tempPath"
+    }
+    catch {
+        Write-LogsUploadGitHub -Message "Failed to get a valid temp path: $_"
+    }
+    
+    $global:JobName = "AAD_Migration"
+    
+
+
     
     # Ensure $tempPath exists
     $secureFilePath = "$tempPath\$global:JobName-secrets\SecurePAT.txt"
-    if (-not (Test-Path "$tempPath\$global:JobName-secrets")) {
-        New-Item -Path "$tempPath\$global:JobName-secrets" -ItemType Directory
+    if (-not (Test-Path "$secureFilePath")) {
+        New-Item -Path "$secureFilePath" -ItemType Directory
     }
 
     $SecurePAT = Get-GitHubPAT
@@ -506,34 +520,60 @@ try {
 
 
 
-    # Example usage
-    try {
-        # $tempPath = Get-ReliableTempPath -LogLevel "INFO"
-        $tempPath = 'c:\temp'
-        Write-LogsUploadGitHub -Message "Temp Path Set To: $tempPath"
-    }
-    catch {
-        Write-LogsUploadGitHub -Message "Failed to get a valid temp path: $_"
-    }
-
-    $global:JobName = "AAD_Migration"
 
 
 
+
+
+
+
+    # Generate timestamp and GUID
+    $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+    $guid = [guid]::NewGuid().ToString()
+
+    # Create timestamped and GUID-stamped paths for TempCopyPath and TempGitPath
+    $tempCopyPath = "$tempPath\$global:JobName-logs-$timestamp-$guid"
+    $tempGitPath = "$tempPath\$global:JobName-git-$timestamp-$guid"
+
+    # Define parameters for the Upload-LogsToGitHub function
     $params = @{
         SecurePAT      = $securePat
         GitExePath     = "C:\Program Files\Git\bin\git.exe"
         LogsFolderPath = "C:\logs"
-        TempCopyPath   = "$tempPath\$global:JobName-logs"
-        TempGitPath    = "$tempPath\$global:JobName-git"
+        TempCopyPath   = $tempCopyPath
+        TempGitPath    = $tempGitPath
         GitUsername    = "aollivierre"
         BranchName     = "main"
         CommitMessage  = "Add logs.zip"
         RepoName       = "syslog"
         JobName        = $global:JobName
     }
-    
+
+    # Call the Upload-LogsToGitHub function with the parameters
     Upload-LogsToGitHub @params
+
+
+
+
+
+
+
+
+
+    # $params = @{
+    #     SecurePAT      = $securePat
+    #     GitExePath     = "C:\Program Files\Git\bin\git.exe"
+    #     LogsFolderPath = "C:\logs"
+    #     TempCopyPath   = "$tempPath\$global:JobName-logs"
+    #     TempGitPath    = "$tempPath\$global:JobName-git"
+    #     GitUsername    = "aollivierre"
+    #     BranchName     = "main"
+    #     CommitMessage  = "Add logs.zip"
+    #     RepoName       = "syslog"
+    #     JobName        = $global:JobName
+    # }
+    
+    # Upload-LogsToGitHub @params
 
 
 

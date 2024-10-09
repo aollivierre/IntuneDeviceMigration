@@ -4,7 +4,7 @@
 
 # Set environment variable globally for all users
 
-$global:mode = 'prod'
+$global:mode = 'dev'
 
 [System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'Machine')
 [System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'process')
@@ -140,7 +140,7 @@ switch ($global:mode) {
 
 # Wait-Debugger
 
-Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
+# Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
 
 # Wait-Debugger
 
@@ -204,11 +204,28 @@ try {
         $executionTime = [System.Diagnostics.Stopwatch]::StartNew()
 
         # Critical section starts here
-        Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
 
+        # Conditional check for dev and prod mode
+        if ($global:mode -eq "dev") {
+            # In dev mode, import the module from the local path
+            Write-Host "Running in dev mode. Importing module from local path."
+            Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
+        }
+        elseif ($global:mode -eq "prod") {
+            # In prod mode, execute the script from the URL
+            Write-Host "Running in prod mode. Executing the script from the remote URL."
+            Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
+        }
+        else {
+            Write-Host "Invalid mode specified. Please set the mode to either 'dev' or 'prod'." -ForegroundColor Red
+            exit 1
+        }
+
+        # Optional: Wait for debugger if needed
         # Wait-Debugger
-        
-        # Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
+
+
+
         
         # Define a hashtable for splatting
         $moduleStarterParams = @{
@@ -727,10 +744,27 @@ try {
 
 
     # Ensure $tempPath exists
+   
+
     $secureFilePath = "$tempPath\$global:JobName-secrets\SecurePAT.txt"
-    if (-not (Test-Path "$tempPath\$global:JobName-secrets")) {
-        New-Item -Path "$tempPath\$global:JobName-secrets" -ItemType Directory
+
+    # Ensure the directory exists before creating the file
+    $directoryPath = [System.IO.Path]::GetDirectoryName($secureFilePath)
+    if (-not (Test-Path -Path $directoryPath)) {
+        New-Item -Path $directoryPath -ItemType Directory | Out-Null
     }
+
+    # Create the file if it does not already exist
+    if (-not (Test-Path -Path $secureFilePath)) {
+        New-Item -Path $secureFilePath -ItemType File | Out-Null
+        Write-Host "Secure file created at $secureFilePath."
+    }
+    else {
+        Write-Host "Secure file already exists at $secureFilePath."
+    }
+
+
+  
 
     $SecurePAT = Get-GitHubPAT
 
@@ -937,20 +971,35 @@ try {
     # $SecurePAT = Read-Host "Please enter your GitHub Personal Access Token (PAT)" -AsSecureString
     # & "$PSScriptRoot\Upload-LogstoGitHub.ps1" -SecurePAT $SecurePAT
 
+
+
+    
+
+    # Generate timestamp and GUID
+    $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+    $guid = [guid]::NewGuid().ToString()
+
+    # Create timestamped and GUID-stamped paths for TempCopyPath and TempGitPath
+    $tempCopyPath = "$tempPath\$global:JobName-logs-$timestamp-$guid"
+    $tempGitPath = "$tempPath\$global:JobName-git-$timestamp-$guid"
+
+    # Define parameters for the Upload-LogsToGitHub function
     $params = @{
         SecurePAT      = $securePat
         GitExePath     = "C:\Program Files\Git\bin\git.exe"
         LogsFolderPath = "C:\logs"
-        TempCopyPath   = "$tempPath\$global:JobName-logs"
-        TempGitPath    = "$tempPath\$global:JobName-git"
+        TempCopyPath   = $tempCopyPath
+        TempGitPath    = $tempGitPath
         GitUsername    = "aollivierre"
         BranchName     = "main"
         CommitMessage  = "Add logs.zip"
         RepoName       = "syslog"
         JobName        = $global:JobName
     }
-    
+
+    # Call the Upload-LogsToGitHub function with the parameters
     Upload-LogsToGitHub @params
+
 
 
     #endregion
