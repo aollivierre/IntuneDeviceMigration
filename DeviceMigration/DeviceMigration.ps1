@@ -5,9 +5,27 @@
 # Set environment variable globally for all users
 
 
+
+# Check if running in PowerShell 5
+if ($PSVersionTable.PSVersion.Major -ne 5) {
+    # Log a message indicating the script is not running in PowerShell 5
+    Write-Host "This script requires PowerShell 5. The current version is PowerShell $($PSVersionTable.PSVersion)." -ForegroundColor Red
+    Write-Host "Please run this script using PowerShell 5." -ForegroundColor Red
+
+    # Exit the script
+    exit 1
+}
+
+# If running in PowerShell 5, continue with the script
+Write-Host "Running in PowerShell 5. Continuing with the script..." -ForegroundColor Green
+
+
+
+
 # Retrieve the environment mode (default to 'prod' if not set)
-$global:mode = $env:EnvironmentMode
+
 $global:mode = 'prod'
+
 
 
 [System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'Machine')
@@ -16,7 +34,7 @@ $global:mode = 'prod'
 # Alternatively, use this PowerShell method (same effect)
 # Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'EnvironmentMode' -Value 'dev'
 
-
+$global:mode = $env:EnvironmentMode
 $global:LOG_ASYNC = $false
 
 # Check if async logging is enabled
