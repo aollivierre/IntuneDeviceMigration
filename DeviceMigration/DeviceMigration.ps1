@@ -21,10 +21,10 @@ Write-Host "Running in PowerShell 5. Continuing with the script..." -ForegroundC
 
 
 if (-not (Test-Path Variable:SimulatingIntune)) {
-    New-Variable -Name 'SimulatingIntune' -Value $false -Option None
+    New-Variable -Name 'SimulatingIntune' -Value $true -Option None
 }
 else {
-    Set-Variable -Name 'SimulatingIntune' -Value $false
+    Set-Variable -Name 'SimulatingIntune' -Value $true
 }
 
 
