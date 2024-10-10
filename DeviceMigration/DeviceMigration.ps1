@@ -850,10 +850,10 @@ try {
     # Create the file if it does not already exist
     if (-not (Test-Path -Path $secureFilePath)) {
         New-Item -Path $secureFilePath -ItemType File | Out-Null
-        Write-Host "Secure file created at $secureFilePath."
+        Write-EnhancedLog -Message "Secure file created at $secureFilePath."
     }
     else {
-        Write-Host "Secure file already exists at $secureFilePath."
+        Write-EnhancedLog -Message "Secure file already exists at $secureFilePath."
     }
 
 
