@@ -4,19 +4,17 @@
 
 # Set environment variable globally for all users
 
-$global:mode = 'dev'
+
+# Retrieve the environment mode (default to 'prod' if not set)
+$global:mode = $env:EnvironmentMode
+$global:mode = 'prod'
+
 
 [System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'Machine')
 [System.Environment]::SetEnvironmentVariable('EnvironmentMode', $global:mode, 'process')
 
 # Alternatively, use this PowerShell method (same effect)
 # Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'EnvironmentMode' -Value 'dev'
-
-
-# Retrieve the environment mode (default to 'prod' if not set)
-$global:mode = $env:EnvironmentMode
-
-
 
 
 $global:LOG_ASYNC = $false
