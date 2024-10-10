@@ -292,8 +292,6 @@ try {
         # Wait-Debugger
 
 
-
-        
         # Define a hashtable for splatting
         $moduleStarterParams = @{
             Mode                   = $global:mode
@@ -303,9 +301,37 @@ try {
             SkipEnhancedModules    = $false
             SkipGitRepos           = $true
         }
-        
-        # Call the function using the splat
-        Invoke-ModuleStarter @moduleStarterParams
+
+        # Check if running in PowerShell 5
+        if ($PSVersionTable.PSVersion.Major -ne 5) {
+            Write-AADMigrationLog -Message  "Not running in PowerShell 5. Relaunching the function call with PowerShell 5."
+
+            # Get the path to PowerShell 5 executable
+            $ps5Path = "$Env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+
+
+            Reset-ModulePaths
+
+            # Relaunch the Invoke-ModuleStarter function call with PowerShell 5
+            & $ps5Path -Command {
+                # Recreate the hashtable within the script block for PowerShell 5
+                $moduleStarterParams = @{
+                    Mode                   = $using:global:mode
+                    SkipPSGalleryModules   = $false
+                    SkipCheckandElevate    = $false
+                    SkipPowerShell7Install = $false
+                    SkipEnhancedModules    = $false
+                    SkipGitRepos           = $true
+                }
+                Invoke-ModuleStarter @moduleStarterParams
+            }
+        }
+        else {
+            # If running in PowerShell 5, execute the function directly
+            Write-AADMigrationLog -Message "Running in PowerShell 5. Executing Invoke-ModuleStarter."
+            Invoke-ModuleStarter @moduleStarterParams
+        }
+
         
         # Critical section ends here
         $executionTime.Stop()
