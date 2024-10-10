@@ -20,17 +20,42 @@ if ($PSVersionTable.PSVersion.Major -ne 5) {
 Write-Host "Running in PowerShell 5. Continuing with the script..." -ForegroundColor Green
 
 
-if (-not (Test-Path Variable:SimulatingIntune)) {
-    New-Variable -Name 'SimulatingIntune' -Value $true -Option None
-}
-else {
-    Set-Variable -Name 'SimulatingIntune' -Value $true
-}
+# if (-not (Test-Path Variable:SimulatingIntune)) {
+#     New-Variable -Name 'SimulatingIntune' -Value $true -Option None
+# }
+# else {
+#     Set-Variable -Name 'SimulatingIntune' -Value $true
+# }
 
 
 # Retrieve the environment mode (default to 'prod' if not set)
 
-$global:mode = 'prod'
+$global:mode = 'dev'
+$global:SimulatingIntune = $false
+
+
+
+
+    # # Conditional check for SimulatingIntune switch
+    # if ($global:SimulatingIntune) {
+    #     # If not running as a web script, run as SYSTEM using PsExec
+    #     Write-EnhancedModuleStarterLog "Simulating Intune environment. Running script as SYSTEM..."
+
+    #     Write-EnhancedModuleStarterLog "Running as SYSTEM..."
+
+    #     $ensureRunningAsSystemParams = @{
+    #         PsExec64Path = Join-Path -Path $PSScriptRoot -ChildPath "private\PsExec64.exe"
+    #         ScriptPath   = $MyInvocation.MyCommand.Path
+    #         TargetFolder = Join-Path -Path $PSScriptRoot -ChildPath "private"
+    #     }
+    
+    #     Ensure-RunningAsSystem @ensureRunningAsSystemParams
+    # }
+    # else {
+    #     Write-EnhancedModuleStarterLog "Not simulating Intune. Skipping SYSTEM execution."
+    # }
+
+
 
 
 
@@ -227,10 +252,6 @@ switch ($global:mode) {
 
 # # Call the function using the splat
 # Invoke-ModuleStarter @moduleStarterParams
-
-
-
-
 
 
 # Define the mutex name (should be the same across all scripts needing synchronization)
@@ -803,25 +824,22 @@ try {
     # Wait-Debugger
 
     # Conditional check for SimulatingIntune switch
-    if ($SimulatingIntune) {
+    if ($global:SimulatingIntune) {
         # If not running as a web script, run as SYSTEM using PsExec
-        Write-EnhancedModuleStarterLog "Simulating Intune environment. Running script as SYSTEM..."
+        Write-EnhancedLog "Simulating Intune environment. Running script as SYSTEM..."
 
-        Write-EnhancedModuleStarterLog "Running as SYSTEM..."
+        Write-EnhancedLog "Running as SYSTEM..."
 
-
-        # Call the function to run as SYSTEM
-        $EnsureRunningAsSystemParams = @{
-            PsExec64Path = $PsExec64Path
-            ScriptPath   = $ScriptToRunAsSystem
-            TargetFolder = $privateFolderPath
+        $ensureRunningAsSystemParams = @{
+            PsExec64Path = Join-Path -Path $PSScriptRoot -ChildPath "private\PsExec64.exe"
+            ScriptPath   = $MyInvocation.MyCommand.Path
+            TargetFolder = Join-Path -Path $PSScriptRoot -ChildPath "private"
         }
-
-        # Run Ensure-RunningAsSystem only if SimulatingIntune is set
-        Ensure-RunningAsSystem @EnsureRunningAsSystemParams
+    
+        Ensure-RunningAsSystem @ensureRunningAsSystemParams
     }
     else {
-        Write-EnhancedModuleStarterLog "Not simulating Intune. Skipping SYSTEM execution."
+        Write-EnhancedLog "Not simulating Intune. Skipping SYSTEM execution."
     }
 
 
