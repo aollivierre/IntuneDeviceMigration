@@ -2,3 +2,4 @@
 *.ppkg
 secrets.psd1
 DeviceMigration/secrets.bitly.psd1
+secrets.GitHub.ps1

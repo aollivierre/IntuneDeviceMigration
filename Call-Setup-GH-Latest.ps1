@@ -184,4 +184,6 @@ $localScriptPath = "$env:TEMP\Setup.ps1"
 [System.IO.File]::WriteAllText($localScriptPath, $scriptContent)
 
 # Now execute the downloaded script
+
+Write-GitHubAPIWebScriptLog -Message "calling Setup.PS1 from Call-Setup-GH-Latest.ps1" -Level 'INFO'
 & $localScriptPath

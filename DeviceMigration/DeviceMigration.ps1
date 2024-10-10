@@ -186,7 +186,7 @@ while (-not $acquiredLock -and $attempt -lt $maxAttempts) {
 
     if (-not $acquiredLock) {
         # If lock wasn't acquired, wait for the back-off period before retrying
-        Write-Warning "Failed to acquire the lock. Retrying in $initialWaitTime seconds..."
+        Write-AADMigrationLog "Failed to acquire the lock. Retrying in $initialWaitTime seconds..." -Level 'WARNING'
         Start-Sleep -Seconds $initialWaitTime
 
         # Increase the wait time using the back-off factor
@@ -196,7 +196,7 @@ while (-not $acquiredLock -and $attempt -lt $maxAttempts) {
 
 try {
     if ($acquiredLock) {
-        Write-Host "Acquired the lock. Proceeding with module installation and import."
+        Write-AADMigrationLog -Message "Acquired the lock. Proceeding with module installation and import."
 
         # Start timing the critical section
         $executionTime = [System.Diagnostics.Stopwatch]::StartNew()
@@ -206,16 +206,16 @@ try {
         # Conditional check for dev and prod mode
         if ($global:mode -eq "dev") {
             # In dev mode, import the module from the local path
-            Write-Host "Running in dev mode. Importing module from local path."
+            Write-AADMigrationLog -Message "Running in dev mode. Importing module from local path."
             Import-Module 'C:\code\ModulesV2\EnhancedModuleStarterAO\EnhancedModuleStarterAO.psm1'
         }
         elseif ($global:mode -eq "prod") {
             # In prod mode, execute the script from the URL
-            Write-Host "Running in prod mode. Executing the script from the remote URL."
+            Write-AADMigrationLog -Message "Running in prod mode. Executing the script from the remote URL."
             Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
         }
         else {
-            Write-Host "Invalid mode specified. Please set the mode to either 'dev' or 'prod'." -ForegroundColor Red
+            Write-AADMigrationLog -Message "Invalid mode specified. Please set the mode to either 'dev' or 'prod'." -Level 'WARNING'
             exit 1
         }
 
