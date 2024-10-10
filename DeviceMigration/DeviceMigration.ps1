@@ -32,6 +32,7 @@ Write-Host "Running in PowerShell 5. Continuing with the script..." -ForegroundC
 
 $global:mode = 'prod'
 $global:SimulatingIntune = $false
+$ExitOnCondition = $true
 
 
 
@@ -818,7 +819,7 @@ try {
     }
     else {
         Write-EnhancedLog -Message "The script is not running under the SYSTEM account."
-        Test-DeviceStatusAndEnrollment -ScriptPath $PSScriptRoot -ExitOnCondition $true
+        Test-DeviceStatusAndEnrollment -ScriptPath $PSScriptRoot -ExitOnCondition $ExitOnCondition
     }
 
     # Wait-Debugger
