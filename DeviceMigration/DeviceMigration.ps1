@@ -30,7 +30,7 @@ Write-Host "Running in PowerShell 5. Continuing with the script..." -ForegroundC
 
 # Retrieve the environment mode (default to 'prod' if not set)
 
-$global:mode = 'prod'
+$global:mode = 'dev'
 $global:SimulatingIntune = $false
 
 
@@ -386,7 +386,7 @@ try {
         Write-AADMigrationLog -Message "Critical section execution time: $timeTaken seconds"
 
         # Optionally, log this to a file for further analysis
-        Add-Content -Path "C:\Temp\CriticalSectionTimes.log" -Value "Execution time: $timeTaken seconds - $(Get-Date)"
+        # Add-Content -Path "C:\Temp\CriticalSectionTimes.log" -Value "Execution time: $timeTaken seconds - $(Get-Date)"
 
         Write-AADMigrationLog -Message "Module installation and import completed."
     }
@@ -1121,7 +1121,7 @@ try {
 
     
 
-    # Generate timestamp and GUID
+    # Generate timestamp
     $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
     $tempCopyPath = "$tempPath\$global:JobName-logs-$timestamp"
     $tempGitPath = "$tempPath\$global:JobName-git-$timestamp"
