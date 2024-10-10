@@ -20,6 +20,12 @@ if ($PSVersionTable.PSVersion.Major -ne 5) {
 Write-Host "Running in PowerShell 5. Continuing with the script..." -ForegroundColor Green
 
 
+if (-not (Test-Path Variable:SimulatingIntune)) {
+    New-Variable -Name 'SimulatingIntune' -Value $false -Option None
+}
+else {
+    Set-Variable -Name 'SimulatingIntune' -Value $false
+}
 
 
 # Retrieve the environment mode (default to 'prod' if not set)
@@ -796,16 +802,27 @@ try {
 
     # Wait-Debugger
 
+    # Conditional check for SimulatingIntune switch
+    if ($SimulatingIntune) {
+        # If not running as a web script, run as SYSTEM using PsExec
+        Write-EnhancedModuleStarterLog "Simulating Intune environment. Running script as SYSTEM..."
 
-    $ensureRunningAsSystemParams = @{
-        PsExec64Path = Join-Path -Path $PSScriptRoot -ChildPath "private\PsExec64.exe"
-        ScriptPath   = $MyInvocation.MyCommand.Path
-        TargetFolder = Join-Path -Path $PSScriptRoot -ChildPath "private"
+        Write-EnhancedModuleStarterLog "Running as SYSTEM..."
+
+
+        # Call the function to run as SYSTEM
+        $EnsureRunningAsSystemParams = @{
+            PsExec64Path = $PsExec64Path
+            ScriptPath   = $ScriptToRunAsSystem
+            TargetFolder = $privateFolderPath
+        }
+
+        # Run Ensure-RunningAsSystem only if SimulatingIntune is set
+        Ensure-RunningAsSystem @EnsureRunningAsSystemParams
     }
-
-    Ensure-RunningAsSystem @ensureRunningAsSystemParams
-    #endregion
-
+    else {
+        Write-EnhancedModuleStarterLog "Not simulating Intune. Skipping SYSTEM execution."
+    }
 
 
 
