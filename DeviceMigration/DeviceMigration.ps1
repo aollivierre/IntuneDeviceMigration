@@ -316,7 +316,7 @@ try {
             & $ps5Path -Command {
                 # Recreate the hashtable within the script block for PowerShell 5
                 $moduleStarterParams = @{
-                    Mode                   = $using:global:mode
+                    Mode                   = $global:mode
                     SkipPSGalleryModules   = $false
                     SkipCheckandElevate    = $false
                     SkipPowerShell7Install = $false
