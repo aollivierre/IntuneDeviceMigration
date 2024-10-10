@@ -1,4 +1,5 @@
 $mode = $env:EnvironmentMode
+$global:SimulatingIntune = $false
 
 # #region FIRING UP MODULE STARTER
 # #################################################################################################
@@ -271,15 +272,24 @@ try {
     # ############### CALLING AS SYSTEM to simulate Intune deployment as SYSTEM (Uncomment for debugging) ############################
     # ################################################################################################################################
 
-    # Example usage
-    $ensureRunningAsSystemParams = @{
-        PsExec64Path = Join-Path -Path $PSScriptRoot -ChildPath "private\PsExec64.exe"
-        ScriptPath   = $MyInvocation.MyCommand.Path
-        TargetFolder = Join-Path -Path $PSScriptRoot -ChildPath "private"
+    # Conditional check for SimulatingIntune switch
+    if ($global:SimulatingIntune) {
+        # If not running as a web script, run as SYSTEM using PsExec
+        Write-EnhancedLog "Simulating Intune environment. Running script as SYSTEM..."
+
+        Write-EnhancedLog "Running as SYSTEM..."
+
+        $ensureRunningAsSystemParams = @{
+            PsExec64Path = Join-Path -Path $PSScriptRoot -ChildPath "private\PsExec64.exe"
+            ScriptPath   = $MyInvocation.MyCommand.Path
+            TargetFolder = Join-Path -Path $PSScriptRoot -ChildPath "private"
+        }
+    
+        Ensure-RunningAsSystem @ensureRunningAsSystemParams
     }
-
-    Ensure-RunningAsSystem @ensureRunningAsSystemParams
-
+    else {
+        Write-EnhancedLog "Not simulating Intune. Skipping SYSTEM execution."
+    }
 
     $ValidatePSADTFilesParams = @{
         ScriptRoot = $PSScriptRoot
