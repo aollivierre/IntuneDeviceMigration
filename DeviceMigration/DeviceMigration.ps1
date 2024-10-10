@@ -212,7 +212,26 @@ try {
         elseif ($global:mode -eq "prod") {
             # In prod mode, execute the script from the URL
             Write-AADMigrationLog -Message "Running in prod mode. Executing the script from the remote URL."
-            Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
+            # Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
+
+
+            # Check if running in PowerShell 5
+            if ($PSVersionTable.PSVersion.Major -ne 5) {
+                Write-AADMigrationLog -Message "Not running in PowerShell 5. Relaunching the command with PowerShell 5."
+
+                # Get the path to PowerShell 5 executable
+                $ps5Path = "$Env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+
+                # Relaunch the Invoke-Expression command with PowerShell 5
+                & $ps5Path -Command "Invoke-Expression (Invoke-RestMethod 'https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1')"
+            }
+            else {
+                # If running in PowerShell 5, execute the command directly
+                Write-AADMigrationLog -Message "Running in PowerShell 5. Executing the command."
+                Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/aollivierre/module-starter/main/Install-EnhancedModuleStarterAO.ps1")
+            }
+
+
         }
         else {
             Write-AADMigrationLog -Message "Invalid mode specified. Please set the mode to either 'dev' or 'prod'." -Level 'WARNING'
