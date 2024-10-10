@@ -179,7 +179,7 @@ $acquiredLock = $false
 # Try acquiring the mutex with dynamic back-off
 while (-not $acquiredLock -and $attempt -lt $maxAttempts) {
     $attempt++
-    Write-Host "Attempt $attempt to acquire the lock..."
+    Write-AADMigrationLog -Message "Attempt $attempt to acquire the lock..."
 
     # Try to acquire the mutex with a timeout
     $acquiredLock = $mutex.WaitOne([TimeSpan]::FromSeconds($initialWaitTime))
@@ -243,12 +243,12 @@ try {
 
         # Measure the time taken and log it
         $timeTaken = $executionTime.Elapsed.TotalSeconds
-        Write-Host "Critical section execution time: $timeTaken seconds"
+        Write-AADMigrationLog -Message "Critical section execution time: $timeTaken seconds"
 
         # Optionally, log this to a file for further analysis
         Add-Content -Path "C:\Temp\CriticalSectionTimes.log" -Value "Execution time: $timeTaken seconds - $(Get-Date)"
 
-        Write-Host "Module installation and import completed."
+        Write-AADMigrationLog -Message "Module installation and import completed."
     }
     else {
         Write-Warning "Failed to acquire the lock after $maxAttempts attempts. Exiting the script."
@@ -262,7 +262,7 @@ finally {
     # Release the mutex if it was acquired
     if ($acquiredLock) {
         $mutex.ReleaseMutex()
-        Write-Host "Released the lock."
+        Write-AADMigrationLog -Message "Released the lock."
     }
 
     # Dispose of the mutex object
