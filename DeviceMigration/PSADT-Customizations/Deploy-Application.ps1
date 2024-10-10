@@ -579,12 +579,9 @@ Try {
 		
 		# Generate timestamp and GUID
 		$timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-		$guid = [guid]::NewGuid().ToString()
-   
-		# Create timestamped and GUID-stamped paths for TempCopyPath and TempGitPath
-		$tempCopyPath = "$tempPath\$global:JobName-logs-$timestamp-$guid"
-		$tempGitPath = "$tempPath\$global:JobName-git-$timestamp-$guid"
-   
+		$tempCopyPath = "$tempPath\$global:JobName-logs-$timestamp"
+		$tempGitPath = "$tempPath\$global:JobName-git-$timestamp"
+	
 		# Define parameters for the Upload-LogsToGitHub function
 		$params = @{
 			SecurePAT      = $securePat
@@ -598,7 +595,7 @@ Try {
 			RepoName       = "syslog"
 			JobName        = $global:JobName
 		}
-   
+	
 		# Call the Upload-LogsToGitHub function with the parameters
 		Upload-LogsToGitHub @params
 	
