@@ -30,7 +30,7 @@ Write-Host "Running in PowerShell 5. Continuing with the script..." -ForegroundC
 
 # Retrieve the environment mode (default to 'prod' if not set)
 
-$global:mode = 'dev'
+$global:mode = 'prod'
 $global:SimulatingIntune = $false
 
 
@@ -818,7 +818,7 @@ try {
     }
     else {
         Write-EnhancedLog -Message "The script is not running under the SYSTEM account."
-        Test-DeviceStatusAndEnrollment -ScriptPath $PSScriptRoot
+        Test-DeviceStatusAndEnrollment -ScriptPath $PSScriptRoot -ExitOnCondition $true
     }
 
     # Wait-Debugger
