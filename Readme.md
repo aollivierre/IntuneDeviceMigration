@@ -32,7 +32,7 @@ Curious? Join the **Beta testing** group now and be among the first to explore D
 
 ---
 
-### Prerequisites
+### 2\. **Prerequisites**
 
 1. **PowerShell Version:**  
    - **PowerShell 5** is required for module installation.
