@@ -7,13 +7,34 @@
 *   **Title:** _Device Migration Utility (DMU)_
 *   **Description:** This utility automates the migration of devices to Azure Active Directory (AAD) and OneDrive with a focus on seamless integration and efficient handling of critical tasks such as module installation, scheduled tasks, and logging. The script supports running in the SYSTEM context to simulate Intune behavior, encrypt sensitive data, and manage scheduled tasks for OneDrive synchronization and migration execution.
 
+Here’s the revised **Prerequisites** section with the details on the provisioning package (PPKG) and conditional access exclusions:
+
+* * *
+
 ### 2\. **Prerequisites**
 
-*   **PowerShell Version:** PowerShell 5 (required for module installation).
-    *   The script must be run using PowerShell 5 because the modules are installed in Windows PowerShell, which could cause issues if installed in PowerShell 7.
-*   **System Context:** The script should be run under the SYSTEM account when simulating Intune behavior.
-*   **Automated Git and GitHub Installation:** The script automates the installation of Git and the GitHub CLI if they are not already installed.
-*   **Administrative Permissions:** Necessary to execute the script in the required contexts.
+1.  **PowerShell Version:**
+    
+    *   **PowerShell 5** (required for module installation).
+    *   The script must be run using PowerShell 5 to ensure proper module installation in Windows PowerShell. Running it in PowerShell 7 could cause issues with module dependencies.
+2.  **Provisioning Package (PPKG):**
+    
+    *   **WCD Tool:** Create a Provisioning Package (PPKG) using the Windows Configuration Designer (WCD) tool, which can be downloaded from the Microsoft website.
+    *   **Automatic Account Creation:** When the PPKG is created and applied, it will automatically create a specific provisioning package account in Entra ID.
+    *   **Conditional Access and MFA Exclusions:**
+        *   To avoid issues with the Entra join process using the PPKG, ensure the PPKG account GUID is excluded from **Conditional Access Policies** and **MFA requirements**.
+        *   After the account is created, go to Entra and configure these exclusions.
+3.  **System Context:**
+    
+    *   The script should be run under the **SYSTEM account** to simulate Intune behavior and allow full device access when necessary. This is critical when deploying the script via Intune.
+4.  **Automated Git and GitHub Installation:**
+    
+    *   The script automates the installation of **Git** and the **GitHub CLI** if they are not already present on the system.
+5.  **Administrative Permissions:**
+    
+    *   Ensure you have administrative permissions to execute the script, especially when running under the SYSTEM account or handling device-level changes.
+
+* * *
 
 ### 3\. **Installation**
 
