@@ -2,6 +2,31 @@
 
 
 
+---
+
+🚀 **Coming Soon: The Device Migration Utility (DMU) v1!** 🚀
+
+Get ready to simplify your **On-prem AD** and **Hybrid AD joins** into **Azure AD (now Entra ID) joins** with the upcoming **DMU tool v1**! This powerhouse script is built to automate the move to **Entra Joined** status while managing device state, user profiles, OneDrive, and more.
+
+**Beta Testers Wanted!** You can experience DMU early, and your insights will help shape the official release. 🚀
+
+🔧 **What DMU Does:**
+- Smoothly transitions devices to **Entra Joined**—no full device wipe required!
+- Enables automatic **Intune enrollment** (with proper licensing, such as Entra ID P1 for auto-enrollment and Intune P1 for device management).
+- Uses supported Microsoft methods, like the PPKG for Entra ID joins, but note: **this isn’t an officially supported method by Microsoft**—a clean wipe is still recommended to avoid GPO and Intune CSP conflicts. Yet, for many environments, DMU handles each step seamlessly!
+
+🔍 **Highlights for Early Users:**
+- Device migration with minimal user impact
+- Entra ID and Intune integration made easy
+- Automated tasks, logging, and security-first data handling
+
+Curious? Ready to streamline migrations? Become a **Beta tester** today, and help bring DMU v1 to life!
+
+#DMU #DeviceMigrationUtility #EntraID #IntuneEnrollment #AzureAD #BetaTest #ComingSoon #ITAutomation
+
+--- 
+
+
 ### 1\. **Project Overview**
 
 *   **Title:** _Device Migration Utility (DMU)_
