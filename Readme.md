@@ -30,32 +30,36 @@ Curious? Join the **Beta testing** group now and be among the first to explore D
 *   **Title:** _Device Migration Utility (DMU)_
 *   **Description:** This utility automates the migration of devices to Azure Active Directory (AAD) and OneDrive with a focus on seamless integration and efficient handling of critical tasks such as module installation, scheduled tasks, and logging. The script supports running in the SYSTEM context to simulate Intune behavior, encrypt sensitive data, and manage scheduled tasks for OneDrive synchronization and migration execution.
 
-Here’s the revised **Prerequisites** section with the details on the provisioning package (PPKG) and conditional access exclusions:
+---
 
-* * *
+### Prerequisites
 
-### 2\. **Prerequisites**
+1. **PowerShell Version:**  
+   - **PowerShell 5** is required for module installation.
+   - Run the script in PowerShell 5 to ensure modules install in Windows PowerShell. Running in PowerShell 7 may cause issues with dependencies.
 
-1.  **PowerShell Version:**
-    
-    *   **PowerShell 5** (required for module installation).
-    *   The script must be run using PowerShell 5 to ensure proper module installation in Windows PowerShell. Running it in PowerShell 7 could cause issues with module dependencies.
-2.  **Provisioning Package (PPKG):**
-    
-    *   **WCD Tool:** Create a Provisioning Package (PPKG) using the Windows Configuration Designer (WCD) tool, which can be downloaded from the Microsoft website.
-    *   **Automatic Account Creation:** When the PPKG is created and applied, it will automatically create a specific provisioning package account in Entra ID.
-    *   **Conditional Access and MFA Exclusions:**
-        *   To avoid issues with the Entra join process using the PPKG, ensure the PPKG account GUID is excluded from **Conditional Access Policies** and **MFA requirements**.
-        *   After the account is created, go to Entra and configure these exclusions.
-3.  **System Context:**
-    
-    *   The script should be run under the **SYSTEM account** to simulate Intune behavior and allow full device access when necessary. This is critical when deploying the script via Intune.
-4.  **Automated Git and GitHub Installation:**
-    
-    *   The script automates the installation of **Git** and the **GitHub CLI** if they are not already present on the system.
-5.  **Administrative Permissions:**
-    
-    *   Ensure you have administrative permissions to execute the script, especially when running under the SYSTEM account or handling device-level changes.
+2. **Provisioning Package (PPKG):**  
+   - **WCD Tool:** Use the Windows Configuration Designer (WCD) tool (available on the [Windows Configuration Designer (WCD)](https://learn.microsoft.com/en-us/windows/configuration/provisioning-packages/provisioning-install-icd)
+) to create a Provisioning Package (PPKG).
+   - **Automatic Account Creation and Entra Configuration:** After applying the PPKG, a specific provisioning package account is created in Entra ID. To prevent errors in Entra joins, exclude this account from **Conditional Access Policies** and **MFA requirements** in Entra.
+   - **Supported Components:** While each step used by DMU, such as the PPKG, is supported by Microsoft, the overall process of migrating to Entra Join without a wipe is not officially supported.
+
+3. **System Context:**  
+   - The script should be run under the **SYSTEM account** to simulate Intune behavior, especially if you’re deploying the script via Intune.
+
+4. **Automatic Enrollment Requirement:**  
+   - Automatic enrollment needs to be enabled in your Intune tenant. Entra ID P1 and Intune P1 licenses are required for automatic enrollment and Intune device management.
+
+5. **Administrative Permissions:**  
+   - Ensure you have administrative permissions to execute the script and access the required contexts.
+
+6. **GitHub Personal Access Token (Optional):**  
+   - To upload logs or access an encrypted PPKG file stored in a private GitHub repository, you’ll need a **GitHub Personal Access Token (PAT)**.
+   - **Usage:** 
+     - **Log Uploads:** The script allows logs to be securely zipped and uploaded to your private GitHub repository if desired.
+     - **Encrypted PPKG Download:** If the PPKG is stored as an encrypted file in a private GitHub repository, the GitHub PAT enables secure access to download it.
+
+---
 
 * * *
 
