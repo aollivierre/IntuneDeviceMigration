@@ -61,8 +61,6 @@ Curious? Join the **Beta testing** group now and be among the first to explore D
 
 ---
 
-* * *
-
 ### 3\. **Installation**
 
 *   **Easy Installation Command:** To simplify the process, the script can be run using an `iex` command that will handle downloading the entire GitHub repository, unzipping it, and initiating the required modules and setup:
