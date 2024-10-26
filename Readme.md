@@ -144,7 +144,10 @@ Curious? Join the **Beta testing** group now and be among the first to explore D
 *   **Simplified Execution:** Emphasize the use of the `iex` command for easy script execution, avoiding manual downloads.
 *   **GitHub Integration:** Highlight that uploading logs to GitHub is optional but available for advanced users.
 
- 
+
+ Credits/Inspirations:
+ https://www.modernendpoint.com/managed/Migrating-AD-Domain-Joined-Computer-to-Azure-AD-Cloud-only-join/
+ https://mauvtek.com/home/active-directory-join-to-azure-ad-join
  
  # Setup Instructions
 
