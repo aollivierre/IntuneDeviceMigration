@@ -115,7 +115,7 @@ Curious? Join the **Beta testing** group now and be among the first to explore D
 *   **Initial Setup and Execution:**
     
     ```powershell
-    iex (irm 'URL-to-script')
+    iex (irm bit.ly/4h1T0P4)
     ```
     
     *   This command will automatically:
@@ -143,14 +143,6 @@ Curious? Join the **Beta testing** group now and be among the first to explore D
 *   **Remove Dev/Prod References:** Since the utility is primarily for production use, remove references to development modes from the public-facing documentation.
 *   **Simplified Execution:** Emphasize the use of the `iex` command for easy script execution, avoiding manual downloads.
 *   **GitHub Integration:** Highlight that uploading logs to GitHub is optional but available for advanced users.
-
-Does this revised structure align with your expectations, or would you like to adjust anything further?
-
-
-
-
-
-
 
  
  
