@@ -145,18 +145,64 @@ Curious? Join the **Beta testing** group now and be among the first to explore D
 *   **Simulating Intune Behavior:** When simulating Intune, ensure the script is run under the SYSTEM account to mimic the expected behavior.
 *   **Module Installation:** The script automates module installation, but if any issues arise, check the logs stored in `C:\logs\psf`.
 
-* * *
 
-### Final Considerations:
+---
 
-*   **Remove Dev/Prod References:** Since the utility is primarily for production use, remove references to development modes from the public-facing documentation.
-*   **Simplified Execution:** Emphasize the use of the `iex` command for easy script execution, avoiding manual downloads.
-*   **GitHub Integration:** Highlight that uploading logs to GitHub is optional but available for advanced users.
+### Credits / Inspirations:
+- [Migrating AD Domain Joined Computer to Azure AD Cloud-only Join – Modern Endpoint](https://www.modernendpoint.com/managed/Migrating-AD-Domain-Joined-Computer-to-Azure-AD-Cloud-only-join/)
+- [Active Directory Join to Azure AD Join – Mauvtek](https://mauvtek.com/home/active-directory-join-to-azure-ad-join)
 
+---
 
- Credits/Inspirations:
- https://www.modernendpoint.com/managed/Migrating-AD-Domain-Joined-Computer-to-Azure-AD-Cloud-only-join/
- https://mauvtek.com/home/active-directory-join-to-azure-ad-join
+### Contributing
+
+Thank you for your interest in contributing to this project! Contributions help make open source a vibrant place for learning, inspiration, and collaboration. Whether you’re submitting pull requests, opening issues, or sharing ideas, your contributions are appreciated and benefit everyone. 
+
+If you’re interested in contributing, please:
+- **Open an Issue:** If you spot a bug or have suggestions, please create an issue to discuss.
+- **Submit a Pull Request:** Feel free to make improvements and submit them for review.
+
+For detailed guidelines, please refer to the [CONTRIBUTING]() file.
+
+#### Bug Report Guidelines
+When reporting a bug, please ensure that it is:
+- **Reproducible:** Share the steps needed to replicate the issue.
+- **Detailed:** Include specifics like version, environment, and relevant settings.
+- **Unique:** Check for similar issues to avoid duplicates.
+- **Focused:** Limit each report to a single bug.
+
+I'm open to collaborating with contributors and welcome those interested in direct maintenance. Let’s work together to make DMU the best it can be!
+
+---
+
+### Support
+
+This project is open source, developed in my spare time, and designed to help the community. While I’m unable to provide dedicated support, I encourage users to collaborate and share insights via GitHub discussions.
+
+For commercial support inquiries, please reach out through my LinkedIn profile. https://www.linkedin.com/in/aollivierre/ 
+
+#### Sponsorship
+If this project benefits your commercial work, please consider supporting it through sponsorship.
+
+---
+
+### Contact
+
+You can reach out to the maintainer through:
+- **[GitHub Discussions](https://github.com/aollivierre/IntuneDeviceMigration/discussions)**
+- **Email** (listed in the GitHub profile)
+
+---
+
+### License
+
+This project is licensed under the **MIT License**. See the [LICENSE]() file for more details.
+
+---
+
+This version provides a welcoming, collaborative message and clarifies each section for potential contributors, users, and supporters. Let me know if you need further customization!
+
+ 
  
  # Setup Instructions
 
