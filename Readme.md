@@ -44,14 +44,20 @@ Curious? Join the **Beta testing** group now and be among the first to explore D
    - **Automatic Account Creation and Entra Configuration:** After applying the PPKG, a specific provisioning package account is created in Entra ID. To prevent errors in Entra joins, exclude this account from **Conditional Access Policies** and **MFA requirements** in Entra.
    - **Supported Components:** While each step used by DMU, such as the PPKG, is supported by Microsoft, the overall process of migrating to Entra Join without a wipe is not officially supported.
 
-3. **System Context:**  
-   - The script should be run under the **SYSTEM account** to simulate Intune behavior, especially if you’re deploying the script via Intune.
+---
+
+3. **System Context (Optional):**
+   - For testing or deployment through **Intune**, the script can be run under the **SYSTEM account** to simulate Intune behavior. This is especially useful if you plan to make the tool available through the **Company Portal** or push it as a required app.
+   - The main script includes a switch to enable **Intune simulation mode**, which will automatically run the script in the SYSTEM context if set to `True`. This mode uses `PsExec64.exe` in the background to simulate the Intune SYSTEM context.
+   - **Note:** During the **Beta phase**, it is recommended to thoroughly test the tool in various scenarios before deploying it silently across devices.
+
+---
 
 4. **Automatic Enrollment Requirement:**  
    - Automatic enrollment needs to be enabled in your Intune tenant. Entra ID P1 and Intune P1 licenses are required for automatic enrollment and Intune device management.
 
 5. **Administrative Permissions:**  
-   - Ensure you have administrative permissions to execute the script and access the required contexts.
+   - Ensure you have local administrative permissions on the device running Windows 10/11 to execute the script and access the required contexts.
 
 6. **GitHub Personal Access Token (Optional):**  
    - To upload logs or access an encrypted PPKG file stored in a private GitHub repository, you’ll need a **GitHub Personal Access Token (PAT)**.
