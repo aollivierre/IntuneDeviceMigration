@@ -109,6 +109,19 @@ Curious? Join the **Beta testing** group now and be among the first to explore D
 *   **Encryption:** The script encrypts sensitive information if the user opts to upload logs to GitHub. This includes encrypting secrets for secure upload.
 *   **Status Pop-up:** A Windows form provides the device’s Azure AD and Intune enrollment status. If the device is already Azure AD joined and Intune enrolled, the script exits gracefully.
 
+---
+
+### OneDrive and User Profile Preparation
+
+This tool includes automated steps to ensure **OneDrive Known Folder Move (KFM)** is enabled and **OneDrive is fully synced** before starting the migration process. Additionally, the DMU tool will:
+
+- Backup **Outlook signatures**, **Google Chrome Profile** and the **Downloads folder** to the logged-in user’s designated OneDrive folder.
+  
+#### Important Note on User Login:
+To avoid sync errors during migration, please ensure that **all other user accounts are logged off**, leaving only the current user (under which OneDrive is running) logged in. Having multiple active user sessions can interfere with the OneDrive sync verification process, causing it to fail.
+
+---
+
 ### 6\. **Logging**
 
 *   **Local Logs:** All logs are stored in `C:\logs` with detailed information on script execution.
