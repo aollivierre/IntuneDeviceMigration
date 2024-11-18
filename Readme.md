@@ -159,6 +159,46 @@ To avoid sync errors during migration, please ensure that **all other user accou
 *   **Module Installation:** The script automates module installation, but if any issues arise, check the logs stored in `C:\logs\psf`.
 
 
+Below is the reformatted list of known issues using proper Markdown for your GitHub page:
+
+---
+
+## Known Issues
+
+1. **LAPS Policy Requirement**  
+   A Local Administrator Password Solution (LAPS) policy from Intune is required for local admin accounts. This is because a VPN connection is necessary to reach the domain controller, allowing the domain admin credentials to function properly. The script should connect to Intune and create a configuration profile under Endpoint Security to configure Windows LAPS manual or automatic which requires Windows 11 24 H2
+
+2. **Device Removal from Intune**  
+   The script needs the capability to remove the device from Intune during the preparation step before re-enrollment.
+
+3. **Execution Policy Setting**  
+   The `setup.ps1` script needs to explicitly set the execution policy at the beginning to ensure the script can run without policy-related errors.
+
+4. **Access Denied for Windows Forms in Elevated Context**  
+   When elevating the PowerShell console to admin, Windows Forms fail due to "Access Denied" errors. This occurs because the forms run under a different context than the user context being migrated.  
+   - **Workaround:** Add the user to the local admin group after connecting to the VPN and elevating with the domain user (`lusrmgr.msc`). However, this is not ideal.  
+   - **Alternative Solution:** Suppress the GUI if the local user is not an admin and instead fall back to console mode.
+
+5. **Access Issues for Temporary Folder in Elevated Context**  
+   The script encounters access issues when attempting to open the temporary folder under a different elevated context. This should be suppressed to avoid errors or service UI can be integrated to launch it under the SYSTEM context (requires testing)
+
+6. **KeePassXC CLI Installation**  
+   The script needs to install the KeePassXC CLI utility, as it is currently not found during execution.
+
+7. **OneDrive Sync Utility Status Check on Windows 10**  
+   The OneDrive Sync Utility status check is not working on Windows 10 version 22H2. Consider either fixing this issue or skipping the check altogether and logging a warning.
+
+8. **Repository Re-download on Every Execution**  
+   The script currently re-downloads the entire repository every time it runs.  
+   - **Suggestion:** Implement a caching mechanism to use a previously downloaded copy and prompt the user to choose between using the cached version or re-downloading from scratch.
+
+9. **Workgroup Join After Domain Disjoin**  
+   The script should join the computer to the `MSHOME` workgroup after disjoining it from the domain.
+
+10. **Primary User Update After Migration**  
+    The script should update the primary user assignment after the migration is completed. This could potentially be extended to update all users based on the logic from the T-Bone script.
+
+
 ---
 
 ### Credits / Inspirations:
