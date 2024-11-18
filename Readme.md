@@ -158,12 +158,7 @@ To avoid sync errors during migration, please ensure that **all other user accou
 *   **Simulating Intune Behavior:** When simulating Intune, ensure the script is run under the SYSTEM account to mimic the expected behavior.
 *   **Module Installation:** The script automates module installation, but if any issues arise, check the logs stored in `C:\logs\psf`.
 
-
-Below is the reformatted list of known issues using proper Markdown for your GitHub page:
-
----
-
-## Known Issues
+More issues and a some ideas for future:
 
 1. **LAPS Policy Requirement**  
    A Local Administrator Password Solution (LAPS) policy from Intune is required for local admin accounts. This is because a VPN connection is necessary to reach the domain controller, allowing the domain admin credentials to function properly. The script should connect to Intune and create a configuration profile under Endpoint Security to configure Windows LAPS manual or automatic which requires Windows 11 24 H2
@@ -198,6 +193,9 @@ Below is the reformatted list of known issues using proper Markdown for your Git
 10. **Primary User Update After Migration**  
     The script should update the primary user assignment after the migration is completed. This could potentially be extended to update all users based on the logic from the T-Bone script.
 
+
+11. **Build a UI using WPF or WinUI3 in VS/VS Code with XAML and C#**
+    The script would appreciate a UI to guide the user through the various steps and options. I looked into WPF and WinUI3 and I started a general frame but my C#/XAML skills are still very modest :)
 
 ---
 
