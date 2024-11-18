@@ -160,7 +160,7 @@ To avoid sync errors during migration, please ensure that **all other user accou
 
 More issues and a some ideas for future:
 
-1. **LAPS Policy Requirement**  
+1. **LAPS Policy (Recommended)**  
    A Local Administrator Password Solution (LAPS) policy from Intune is required for local admin accounts. This is because a VPN connection is necessary to reach the domain controller, allowing the domain admin credentials to function properly. The script should connect to Intune and create a configuration profile under Endpoint Security to configure Windows LAPS manual or automatic which requires Windows 11 24 H2
 
 2. **Device Removal from Intune**  
